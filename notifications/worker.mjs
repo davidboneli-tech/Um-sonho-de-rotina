@@ -140,7 +140,7 @@ export async function deliver(env, now = Date.now(), transport = fetch) {
       // Workers supports manual/follow only. A 3xx is rejected below, never followed.
       const result = await transport(subscription.endpoint, { ...payload, redirect: "manual", signal: AbortSignal.timeout(10000) });
       providerStatus = result.status;
-      console.log("push_result", { status: providerStatus, attempt: row.attempts, test: !!row.is_test });
+      if (row.is_test || !result.ok) console.log("push_result", { status: providerStatus, attempt: row.attempts, test: !!row.is_test });
       stage = "registro";
       if (result.status === 404 || result.status === 410) {
         await env.DB.prepare("DELETE FROM devices WHERE id=? AND subscription=?").bind(row.device, device.subscription).run();

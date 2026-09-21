@@ -2,7 +2,7 @@
 
 ## Estado
 
-Cliente PWA e serviço de notificações implementados. **O serviço ainda precisa ser provisionado na conta Cloudflare do proprietário e validado no iPhone.** A versão publicada informa que aguarda configuração; não anuncia notificações ativas.
+Serviço provisionado e conectado. Em 21/09/2026, David confirmou o aviso de teste e o lembrete de um compromisso real no iPhone bloqueado. Alterações/exclusões, medicamentos e reconexão têm testes automatizados; a conferência desses casos no aparelho permanece pendente.
 
 ## Funcionamento
 
@@ -16,7 +16,9 @@ Cliente PWA e serviço de notificações implementados. **O serviço ainda preci
 - `silent: true` pede ausência de som/vibração. Verificar também Sons nos ajustes de notificações do iPhone.
 - Sugestões de atividade continuam dentro da agenda; esta etapa envia compromissos configurados e lembretes individuais de medicamentos.
 
-## Provisionamento (uma vez, pelo responsável técnico)
+## Provisionamento de uma instalação nova
+
+A instalação da Fabi já está configurada. Não recrie banco, chaves ou inscrição para manutenção de rotina. As instruções abaixo são para novas instalações.
 
 Requer conta Cloudflare autorizada, Node.js 22+ e acesso a Workers/D1. A integração foi dimensionada para uso familiar no plano gratuito, sujeito às cotas do provedor; não habilitar plano pago automaticamente.
 
@@ -41,6 +43,13 @@ Na pasta `notifications`:
 - `npm test` em `notifications`: SQLite real em memória, autorização/CORS, endpoints permitidos, privacidade, atualização/exclusão, criptografia real da biblioteca, repetição, tentativas e inscrições expiradas.
 - `npm run check` em `notifications`: empacotamento de Worker, sem publicação.
 - Testes do projeto principal validam domínio, backup e service worker offline. Teste de push no service worker verifica silêncio e abertura da agenda.
-- Ainda obrigatório antes de anunciar pronto: ativar no iPhone, receber teste com tela bloqueada, testar edição/exclusão e reconexão após alteração offline.
+- Confirmados no iPhone: ativação, teste e compromisso real com tela bloqueada. Pendentes no aparelho: edição/exclusão, medicamentos e reconexão após alteração offline.
 
 Fontes técnicas: [WebKit](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/), [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/), [D1](https://developers.cloudflare.com/d1/worker-api/d1-database/), [WebCrypto Web Push](https://github.com/block65/webcrypto-web-push).
+
+## Manutenção após a revisão de 21/09/2026
+
+- O envio usa `redirect: "manual"`: o runtime verificado rejeitou `error`; respostas 3xx são tratadas como falha, sem encaminhar credenciais.
+- `push_result` registra testes e respostas sem sucesso; envios normais bem-sucedidos não geram esse registro extra. `push_failure` preserva etapa, classe do erro e tentativa, sem chaves nem conteúdo pessoal.
+- Não limpe as tabelas para retirar testes: registros de lembretes com mais de dez minutos são removidos automaticamente.
+- Os testes Node usam SQLite em memória e transporte simulado. O runtime Workers foi usado para reproduzir a incompatibilidade de redirecionamento. A entrega real depende do teste no aparelho.

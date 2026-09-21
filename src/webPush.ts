@@ -37,6 +37,7 @@ async function api(path: string, body?: unknown, token = read()?.token) {
   if (!response.ok) {
     if (response.status === 401) throw Error("Código de ativação inválido. Confira o código e tente novamente.");
     if (response.status === 410) throw Error("Os avisos deste aparelho expiraram. Toque em Ativar notificações novamente.");
+    if (response.status === 429) throw Error("Aguarde um minuto antes de enviar outro teste.");
     throw Error("Não foi possível atualizar os avisos online. Tente novamente com internet.");
   }
   return response.json();

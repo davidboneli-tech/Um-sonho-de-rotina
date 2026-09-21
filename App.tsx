@@ -167,7 +167,7 @@ function Application() {
     [confirmation, setConfirmation] = useState<Confirmation>(null),
     [message, setMessage] = useState(""),
     [alertStatus, setAlertStatus] = useState(
-      Platform.OS === "web" ? "Nesta versão, os horários ficam na agenda; não há avisos com o app fechado." : "Ative os avisos silenciosos em Ajustes.",
+      Platform.OS === "web" ? "Verificando os lembretes online…" : "Ative os avisos silenciosos em Ajustes.",
     ),
     [goalFilter, setGoalFilter] = useState("Ativos");
   const ref = useRef(data);
