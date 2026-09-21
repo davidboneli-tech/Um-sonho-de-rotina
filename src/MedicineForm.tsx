@@ -12,7 +12,8 @@ import {
   fromBrazil,
   toBrazil,
 } from "./domain";
-import { Page, Button, Title, Field, Check, Txt, Art } from "./ui";
+import { Page, Button, Title, Field, Check, Txt, Art, Choices } from "./ui";
+import { pickMedicinePhoto } from "./medicinePhoto";
 export function MedicineForm({
   value,
   save,
@@ -37,28 +38,31 @@ export function MedicineForm({
     [start, setStart] = useState(toBrazil(m.startDate)),
     [end, setEnd] = useState(m.endDate ? toBrazil(m.endDate) : ""),
     [error, setError] = useState("");
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [interval, setInterval] = useState(String(m.intervalDays || 15));
+  const [frequency, setFrequency] = useState(m.intervalDays ? "interval" : "weekdays");
   async function photo() {
+    setError("");
+    setPhotoBusy(true);
     try {
+      if (Platform.OS === "web") {
+        const uri = await pickMedicinePhoto();
+        if (uri) set(current => ({ ...current, photo: uri }));
+        return;
+      }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         quality: 0.5,
-        base64: Platform.OS === "web",
+        base64: false,
       });
       if (result.canceled) return;
       const asset = result.assets[0];
-      if (Platform.OS === "web")
-        set({
-          ...m,
-          photo: `data:${asset.mimeType || "image/jpeg"};base64,${asset.base64}`,
-        });
-      else {
-        const destination = `${FileSystem.documentDirectory}medicine-${uid()}.jpg`;
-        await FileSystem.copyAsync({ from: asset.uri, to: destination });
-        set({ ...m, photo: destination });
-      }
-    } catch {
-      setError("Não foi possível selecionar a foto.");
-    }
+      const destination = `${FileSystem.documentDirectory}medicine-${uid()}.jpg`;
+      await FileSystem.copyAsync({ from: asset.uri, to: destination });
+      set(current => ({ ...current, photo: destination }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Não foi possível selecionar a foto.");
+    } finally { setPhotoBusy(false); }
   }
   function submit() {
     const list = [...new Set(times.split(",").map((t) => t.trim()))];
@@ -66,9 +70,14 @@ export function MedicineForm({
       !m.name.trim() ||
       !m.dose.trim() ||
       list.some((t) => !validTime(t)) ||
-      !m.days.length
+      (frequency === "weekdays" && !m.days.length)
     ) {
       setError("Informe nome, dose, horários HH:MM e dias de uso.");
+      return;
+    }
+    const intervalDays = frequency === "interval" ? Number(interval) : undefined;
+    if (intervalDays !== undefined && (!Number.isInteger(intervalDays) || intervalDays < 1 || intervalDays > 365)) {
+      setError("Informe um intervalo de 1 a 365 dias.");
       return;
     }
     const startDate = fromBrazil(start),
@@ -80,7 +89,7 @@ export function MedicineForm({
       setError("Confira as datas de início e término.");
       return;
     }
-    save({ ...m, name: m.name.trim(), times: list.sort(), startDate, endDate });
+    save({ ...m, name: m.name.trim(), times: list.sort(), startDate, endDate, intervalDays });
     close();
   }
   return (
@@ -97,9 +106,10 @@ export function MedicineForm({
       ) : (
         <Art index={18} />
       )}
-      <Button outline onPress={photo}>
-        Escolher foto da embalagem
+      <Button outline onPress={photo} disabled={photoBusy}>
+        {photoBusy ? "Preparando foto…" : "Escolher foto da embalagem"}
       </Button>
+      {!!m.photo && <Button outline disabled={photoBusy} onPress={() => set(current => ({ ...current, photo: undefined }))}>Remover foto</Button>}
       <Field
         label="Nome do medicamento"
         value={m.name}
@@ -115,7 +125,12 @@ export function MedicineForm({
         value={times}
         onChangeText={setTimes}
       />
-      {[
+      <Title small>Frequência de uso</Title>
+      <Choices value={frequency} onChange={setFrequency} values={[{ label: "Dias da semana", value: "weekdays" }, { label: "A cada X dias", value: "interval" }]} />
+      {frequency === "interval" ? <>
+        <Field label="Intervalo em dias" value={interval} onChangeText={setInterval} keyboardType="number-pad" />
+        <Txt muted>Exemplo: 15 para usar a cada 15 dias. A data de início é o primeiro dia de uso.</Txt>
+      </> : [
         "Domingo",
         "Segunda",
         "Terça",
@@ -154,10 +169,10 @@ export function MedicineForm({
         onPress={() => set({ ...m, active: !m.active })}
       />
       <Txt muted>
-        Cada horário terá uma confirmação separada. O aviso será silencioso.
+        Cada horário terá uma confirmação separada. Os lembretes seguem a frequência e as datas cadastradas.
       </Txt>
       {!!error && <Txt style={{ color: "#A02D43" }}>{error}</Txt>}
-      <Button onPress={submit}>Salvar medicamento</Button>
+      <Button onPress={submit} disabled={photoBusy}>Salvar medicamento</Button>
     </Page>
   );
 }

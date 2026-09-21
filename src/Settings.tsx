@@ -174,8 +174,7 @@ export function SettingsPage({
         {Platform.OS === "web" && <WebPushControls enable={enableAlerts} refresh={refreshAlerts} />}
         {Platform.OS === "web" && <PwaTools data={data} restore={restore} />}
         <Txt muted>
-          Sem sons, vibrações programadas ou animações. A imagem da Fabi é
-          estática.
+          As imagens da Fabi são estáticas. O som dos lembretes depende das configurações de notificações do aparelho.
         </Txt>
         <Button outline onPress={lock}>
           Bloquear agenda

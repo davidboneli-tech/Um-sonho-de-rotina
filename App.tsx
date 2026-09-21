@@ -62,6 +62,7 @@ import { EventForm } from "./src/EventForm";
 import { MedicineForm } from "./src/MedicineForm";
 import { GoalForm, ActivityForm, GoalCard, Suggestion } from "./src/Goals";
 import { goalAmount } from "./src/goalUnits";
+import { BackupReminder } from "./src/BackupReminder";
 import { FabiMoment } from "./src/FabiMoment";
 import { SettingsPage } from "./src/Settings";
 
@@ -618,6 +619,7 @@ function Application() {
             </View>
             {view === "Hoje" ? (
               <>
+                {selected === today && Platform.OS === "web" && <BackupReminder data={data} />}
                 {selected === today && <FabiMoment data={data} celebrationDismissed={celebrationDismissed} onCelebrate={() => {
                   setCelebrationDismissed(true);
                   setGoalFilter("Concluídos");
@@ -864,6 +866,7 @@ function Application() {
                     <Txt>
                       {m.name} · {m.active ? "Ativo" : "Pausado"}
                     </Txt>
+                    <Txt muted>{m.intervalDays ? `A cada ${m.intervalDays} dias · início ${toBrazil(m.startDate)}` : m.days.length === 7 ? "Todos os dias" : m.days.map(d => ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][d]).join(" · ")} · {m.times.join(", ")}</Txt>
                     <Button
                       outline
                       onPress={() =>

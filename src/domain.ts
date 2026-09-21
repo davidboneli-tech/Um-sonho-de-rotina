@@ -31,6 +31,7 @@ export type Medicine = {
   days: number[];
   startDate: string;
   endDate?: string;
+  intervalDays?: number;
   active: boolean;
   photo?: string;
 };
@@ -272,14 +273,21 @@ export function pending(data: Data, today: string): Occurrence[] {
 }
 export const doseKey = (id: string, date: string, time: string) =>
   `${id}@${date}@${time}`;
+export function medicineOn(m: Medicine, date: string): boolean {
+  if (!m.active || date < m.startDate || (m.endDate && date > m.endDate)) return false;
+  if (m.intervalDays !== undefined) {
+    if (!Number.isInteger(m.intervalDays) || m.intervalDays < 1) return false;
+    // Calendar-day arithmetic, unaffected by daylight-saving transitions.
+    const elapsed = (Date.parse(date + 'T00:00:00Z') - Date.parse(m.startDate + 'T00:00:00Z')) / 86400000;
+    return elapsed % m.intervalDays === 0;
+  }
+  return m.days.includes(parseDay(date).getDay());
+}
 export function dosesOn(data: Data, date: string) {
   return data.medicines
     .filter(
       (m) =>
-        m.active &&
-        date >= m.startDate &&
-        (!m.endDate || date <= m.endDate) &&
-        m.days.includes(parseDay(date).getDay()),
+        medicineOn(m, date),
     )
     .flatMap((medicine) =>
       medicine.times.map((time) => ({
