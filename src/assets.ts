@@ -40,4 +40,4 @@ export const illustrations = [
     source: require("../assets/activities/19_Medicamentos.png"),
   },
 ];
-export { people, fabiSuggestion } from './avatars.generated';
+export { people, fabiSuggestion, fabiScenes } from './avatars.generated';

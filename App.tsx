@@ -61,6 +61,7 @@ import { Auth } from "./src/Auth";
 import { EventForm } from "./src/EventForm";
 import { MedicineForm } from "./src/MedicineForm";
 import { GoalForm, ActivityForm, GoalCard, Suggestion } from "./src/Goals";
+import { FabiMoment } from "./src/FabiMoment";
 import { SettingsPage } from "./src/Settings";
 
 type Screen =
@@ -614,6 +615,7 @@ function Application() {
             </View>
             {view === "Hoje" ? (
               <>
+                {selected === today && <FabiMoment data={data} />}
                 {renderEvents(selected)}
                 {dosesOn(data, selected).length > 0 && (
                   <>

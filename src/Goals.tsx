@@ -26,7 +26,9 @@ import {
   styles,
   useTheme,
 } from "./ui";
-import { fabiSuggestion, illustrations } from "./assets";
+import { fabiScenes, illustrations } from "./assets";
+import { goalScene } from "./companion";
+import { FabiMessage } from "./FabiMoment";
 export function GoalForm({
   value,
   save,
@@ -191,7 +193,7 @@ export function Suggestion({
     <Card alternate>
       <View style={styles.row}>
         <Image
-          source={fabiSuggestion}
+          source={fabiScenes[goalScene(goal)]}
           style={{ width: 90, height: 110, borderRadius: 15 }}
           resizeMode="contain"
         />
@@ -265,6 +267,7 @@ export function GoalCard({ data, goal, edit, record, find, pause }: any) {
         />
       </View>
       <Txt muted>{Math.max(0, goal.target - done)} minutos restantes</Txt>
+      {!goal.paused && ratio >= 1 && <FabiMessage scene="celebrate" title="Meta alcançada!" body={goal.period === "daily" ? "Você completou sua meta de hoje. Cada passo conta!" : "Você completou sua meta deste mês. Que conquista!"} />}
       <Button onPress={record}>Registrar atividade</Button>
       <Button outline onPress={find}>
         Encontrar horário
