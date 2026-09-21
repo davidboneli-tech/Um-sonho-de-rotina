@@ -2,6 +2,7 @@
   "name": "sonho-notificacoes",
   "main": "worker.mjs",
   "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
   "triggers": { "crons": ["* * * * *"] },
   "vars": {
     "APP_ORIGIN": "https://um-sonho-de-rotina.david-boneli.chatgpt.site"
