@@ -124,6 +124,8 @@ export async function deliver(env, now = Date.now(), transport = fetch) {
     if (!row) continue;
     const device = await env.DB.prepare("SELECT subscription FROM devices WHERE id=?").bind(row.device).first();
     if (!device) continue;
+    let stage = "preparacao";
+    let providerStatus = null;
     try {
       const subscription = JSON.parse(device.subscription);
       if (!validSubscription(subscription)) throw Error("subscription");
@@ -134,7 +136,11 @@ export async function deliver(env, now = Date.now(), transport = fetch) {
       // Recheck after encryption: an edit/cancellation may have removed or replaced this lease.
       const current = await env.DB.prepare("SELECT id FROM reminders WHERE device=? AND id=? AND lease=? AND state='sending'").bind(row.device, row.id, lease).first();
       if (!current) continue;
+      stage = "envio";
       const result = await transport(subscription.endpoint, { ...payload, redirect: "error", signal: AbortSignal.timeout(10000) });
+      providerStatus = result.status;
+      console.log("push_result", { status: providerStatus, attempt: row.attempts, test: !!row.is_test });
+      stage = "registro";
       if (result.status === 404 || result.status === 410) {
         await env.DB.prepare("DELETE FROM devices WHERE id=? AND subscription=?").bind(row.device, device.subscription).run();
       } else if (result.ok) {
@@ -144,7 +150,9 @@ export async function deliver(env, now = Date.now(), transport = fetch) {
       } else {
         await env.DB.prepare("UPDATE reminders SET state='failed' WHERE device=? AND id=? AND lease=?").bind(row.device, row.id, lease).run();
       }
-    } catch {
+    } catch (error) {
+      const knownErrors = ["Error", "TypeError", "DataError", "InvalidAccessError", "OperationError", "NotSupportedError", "InvalidCharacterError", "TimeoutError", "AbortError"];
+      console.error("push_failure", { stage, status: providerStatus, error: knownErrors.includes(error?.name) ? error.name : "UnknownError", attempt: row.attempts, test: !!row.is_test });
       await env.DB.prepare("UPDATE reminders SET state=?,retry_at=? WHERE device=? AND id=? AND lease=?")
         .bind(row.attempts < 4 ? "pending" : "failed", now + 60000 * row.attempts, row.device, row.id, lease).run();
     }
