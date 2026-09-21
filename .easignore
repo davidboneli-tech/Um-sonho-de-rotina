@@ -1,0 +1,14 @@
+node_modules/
+.expo/
+.git/
+.env*
+*.p12
+*.mobileprovision
+web-build/
+dist/
+ios-bundle/
+test-results/
+playwright-report/
+docs/referencias/
+tests/screenshots/
+# Personal assets stay in the private build context, not in public Git.

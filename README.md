@@ -1,50 +1,78 @@
 # Um sonho de rotina
 
-Agenda pessoal para iPhone, criada por David Boneli para sua esposa, Fabíola. O projeto nasce do desejo de organizar compromissos, cuidados com a casa e tempo pessoal em um ambiente acolhedor, visual e fácil de usar.
+Agenda pessoal para a Fabíola, criada por David Boneli: compromissos, tarefas, medicamentos e tempo para si em um planner visual e acolhedor.
 
 > O aplicativo deve se adaptar à rotina da Fabi, e não obrigar a Fabi a se adaptar ao aplicativo.
 
-## Estado do projeto
+## Versão 0.1.0 — implementação inicial
 
-**Em especificação e design.** As principais propostas visuais foram aprovadas. As imagens são mockups: ainda não existe aplicativo funcional, instalador para iPhone ou versão navegável neste repositório.
+Código React Native + Expo, preparado para iPhone e editável no Windows. **Sem sons e sem animações.** Avatar estático da Fabi no acesso quando os arquivos pessoais são adicionados localmente. Sem esses arquivos, aparece o ícone do planner. Dados e imagens ficam locais na versão instalada.
+
+**Ainda não é um instalador assinado para iPhone.** TypeScript, testes da lógica e empacotamento JavaScript são verificáveis neste ambiente; Face ID, notificações e instalação precisam de validação no aparelho. Consulte [estado e limites](docs/IMPLEMENTACAO.md).
+
+## Executar no Windows
+
+Instale Node.js LTS compatível com Expo SDK 57 e Git. No PowerShell:
+
+```powershell
+git clone https://github.com/davidboneli-tech/Um-sonho-de-rotina.git
+cd Um-sonho-de-rotina
+npm ci
+npm run web
+```
+
+A versão web serve para conferir a interface usando dados fictícios. Não agenda notificações locais no iPhone, não tem Face ID e não é a entrega offline nativa.
+
+Para trabalhar com o projeto Expo:
+
+```powershell
+npm start
+```
+
+Para criar a versão instalada no iPhone, veja [INSTALACAO.md](docs/INSTALACAO.md). O perfil EAS está preparado, mas nenhum build pago, assinatura Apple ou publicação foi iniciado.
+
+## Implementado
+
+- Hoje, Semana e Agenda; calendário mensal apenas com destaques.
+- Cadastro e edição com imagens, participantes, anotações, checklist, local e prioridades.
+- Tarefas com horário, por período, sem horário e dia inteiro.
+- Recorrências semanais, mensais e anuais; alterações de uma ocorrência ou das futuras.
+- Conflitos com opção de manter os dois; pendências sem transferência automática.
+- Objetivos diários/mensais por tempo, registro real e sugestões confirmadas pela usuária.
+- Medicamentos independentes, foto opcional, horários e histórico de confirmação.
+- Cinco temas, cor, títulos, tamanho de texto, decoração e disponibilidade.
+- PIN de seis dígitos com derivação PBKDF2, recuperação local e Face ID opcional no iOS.
+- Integração de notificações locais silenciosas, com renovação de até 60 próximos avisos.
+
+A primeira abertura não inclui compromissos ou medicamentos de exemplo.
+
+## Validação
+
+```powershell
+npm run typecheck
+npm test
+npm run export:web
+npx expo export --platform ios --output-dir ios-bundle
+```
+
+O último comando empacota JavaScript/recursos, **não compila nem assina um IPA**.
 
 ## Documentação
 
-- [Memorial e requisitos aprovados](docs/REQUISITOS.md)
-- [Telas, temas e catálogo visual](docs/DESIGN.md)
-- [Plano de implementação e validação](docs/IMPLEMENTACAO.md)
+- [Requisitos consolidados](docs/REQUISITOS.md)
+- [Design e imagens](docs/DESIGN.md)
+- [Estado da implementação](docs/IMPLEMENTACAO.md)
+- [Instalação e validação no iPhone](docs/INSTALACAO.md)
+- [Materiais no Drive](https://drive.google.com/drive/folders/1Lk7apnGmvN9QenoyZ7xi528Ei6vA0PBX)
 
-## Recursos definidos
+## Estrutura
 
-- Funcionamento offline, com armazenamento local.
-- Agenda diária, semanal e mensal; calendário mensal reservado aos destaques.
-- Tarefas com horário, por período ou sem horário.
-- Rotinas recorrentes, pendências e conclusão por ocorrência.
-- Eventos com anotações, checklist, local, participantes e lembretes.
-- Alertas de conflito, mantendo a decisão final com a usuária.
-- Aniversários e notificações locais.
-- Objetivos com progresso, registro de atividade e sugestões de horários.
-- Medicamentos com cadastro e confirmação individual por dose prevista.
-- Avatares da família e sete variações da Fabi para lembretes e incentivo.
-- Cinco temas, ajustes de cor, títulos, tamanho do texto e decoração.
-- PIN de seis dígitos, Face ID opcional e código de recuperação local.
+- App.tsx: navegação, consultas e coordenação dos fluxos.
+- src/domain.ts: regras de agenda, recorrência, metas e doses.
+- src/platform.ts: persistência, credenciais e integração nativa.
+- src/notificationModel.ts: seleção dos lembretes futuros.
+- src/*Form.tsx, Auth.tsx, Goals.tsx, Settings.tsx, ui.tsx: interface.
+- assets/: ilustrações genéricas locais; avatares pessoais permanecem fora do Git público.
+- tests/: verificações da lógica e teste reproduzível da interface.
 
-## Identidade
-
-Visual de planner pessoal, com creme, rosa antigo, verde-sálvia e lavanda, ilustrações delicadas e avatares cartoon. Prioridade para legibilidade e poucos toques.
-
-## Materiais
-
-[​​Pasta de materiais no Google Drive](https://drive.google.com/drive/folders/1Lk7apnGmvN9QenoyZ7xi528Ei6vA0PBX)
-
-Os materiais permanecem sujeitos às permissões do Drive. O catálogo documenta quais foram produzidos e quais telas foram aprovadas. Não há cópia dos binários neste repositório nesta etapa.
-
-## Próximos passos
-
-Consolidar a implementação iOS e a forma de instalação para uso pessoal; desenvolver o protótipo navegável; implementar persistência, notificações e segurança; validar em um iPhone real.
-
-A escolha da tecnologia e o método de distribuição ainda estão pendentes. Backup e exportação são possibilidades de expansão, sem aprovação como recursos obrigatórios da primeira versão.
-
-## Histórico
-
-- **21/09/2026:** documentação inicial consolidada a partir das decisões aprovadas durante o planejamento.
+Sem licença de redistribuição definida nesta etapa.

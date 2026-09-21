@@ -82,10 +82,16 @@ Avatar_David.png, Avatar_Fabi.png, Avatar_Helena.png e Avatar_Laura.png: versõe
 
 ## Organização dos arquivos
 
-Os arquivos individuais acima foram enviados ao Drive. As propostas de telas foram apresentadas na conversa; seu arquivamento visual definitivo e inclusão no repositório ainda precisam ser realizados. Esta documentação não afirma que todos os mockups estão no Drive.
+Os arquivos individuais acima foram enviados ao Drive. As propostas e capturas com avatares pessoais permanecem no projeto local e nos materiais privados. Não estão publicadas no repositório público.
 
 Fotos originais da família não são necessárias para consultar a documentação técnica. Não incluir registros reais de medicamentos, PIN, códigos de recuperação ou dados de uso nos exemplos do projeto.
 
 ## Integração futura
 
 Exportar tamanhos adequados ao iPhone sem distorcer proporções, conferir bordas e recortes, testar imagem em fundos dos cinco temas e em tamanhos pequenos. Manter imagens locais no pacote final para funcionamento offline. Imagens de referência não substituem controles nativos, textos editáveis nem acessibilidade.
+
+## Decisão final de movimento e áudio
+
+Nenhuma animação e nenhum som. O GIF experimental foi descartado da implementação. O acesso usa o avatar estático da Fabi. Os sete avatares de incentivo continuam como imagens estáticas. O novo ícone do app está em ../assets/icon.png.
+
+As ilustrações de atividades estão versionadas em assets/activities. Avatares em assets/people e assets/fabi são ignorados pelo Git e adicionados localmente. Não foram incluídas fotos originais da família.

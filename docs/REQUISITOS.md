@@ -1,7 +1,9 @@
 # Memorial consolidado — Um sonho de rotina
 
 Versão documental: 1.0 · 21/09/2026  
-Estado: requisitos aprovados para desenvolvimento, ainda não implementados.
+Estado: requisitos aprovados. Consulte IMPLEMENTACAO.md para o estado de cada entrega.
+
+**Decisão final:** nenhum som e nenhuma animação, inclusive na tela de acesso. A Fabi aparece em imagem estática. Notificações locais permanecem visuais e silenciosas. Ambiente: Windows; aparelho alvo informado pelo usuário: iPhone 12 com iOS 26.2.
 
 Este documento consolida o memorial inicial e as decisões posteriores da conversa. Quando uma decisão foi refinada, prevalece a regra abaixo. Exemplos de horários, metas e medicamentos em mockups são demonstrativos.
 
@@ -79,7 +81,7 @@ Compromissos com horário permanecem em sua data original; não se tornam obriga
 
 Notificações locais, com autorização da usuária. Configurações de aviso no horário, 10 ou 30 minutos antes, 1 hora antes, algumas horas antes, 1 dia antes ou horário personalizado. Permitir desativar individualmente e incluir múltiplos lembretes.
 
-A apresentação e o som dependem das permissões e ajustes do iOS, inclusive modos Foco. Validar agendamento e renovação em aparelho real; não presumir quantidade ilimitada de alertas pendentes.
+Não solicitar som nem incluir áudio nas notificações. A apresentação visual depende das permissões e ajustes do iOS, inclusive modos Foco. Validar agendamento e renovação em aparelho real; não presumir quantidade ilimitada de alertas pendentes.
 
 Aniversários: nome, data, relação, observação, foto opcional e repetição anual. Avisos configuráveis, como 7, 3 ou 1 dia antes e no dia.
 

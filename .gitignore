@@ -1,0 +1,19 @@
+node_modules/
+.expo/
+dist/
+web-build/
+.env*
+*.ipa
+*.p12
+*.mobileprovision
+coverage/
+test-results/
+playwright-report/
+ios-bundle/
+
+# Personal portraits and screenshots stay outside the public repository.
+assets/people/
+assets/fabi/
+src/avatars.generated.ts
+docs/referencias/
+tests/screenshots/

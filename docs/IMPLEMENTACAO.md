@@ -1,67 +1,43 @@
-# Plano de implementação
+# Estado da implementação — 0.1.0
 
-## Situação atual
+## Decisão mais recente
 
-Planejamento e referências visuais aprovados. Nenhum código de aplicativo, testes em iPhone ou instalação foi realizado neste repositório.
+Sem sons e sem animações, inclusive no acesso e nas notificações. Avatar estático da Fabi. Ambiente Windows; destino iPhone 12 com iOS 26.2.
 
-## Decisões técnicas pendentes
+## Entregas em código
 
-- Tecnologia de implementação e versão mínima do iOS.
-- Forma de compilar, assinar e instalar para uso pessoal no iPhone.
-- Persistência local, migrações e proteção dos dados.
-- Agendamento e renovação de notificações dentro das restrições do sistema.
-- Estratégia de PIN, Face ID e recuperação local.
-- Backup/exportação: decidir se entram na primeira versão.
-- Disponibilidade de eventos de dia inteiro e regras de horários silenciosos para cada tipo de aviso.
-
-Não tratar um protótipo web como equivalente automático a um app iOS offline com notificações locais. Validar a solução escolhida antes de prometer o comportamento em segundo plano.
-
-## Etapas
-
-1. Preparar e arquivar telas e ativos aprovados; conferir recortes e formatos.
-2. Definir plataforma e instalação, com prova de funcionamento das notificações em iPhone.
-3. Criar estrutura modular e protótipo navegável das telas aprovadas.
-4. Implementar agenda, tarefas, categorias, participantes e persistência.
-5. Implementar recorrências, conflitos, pendências e notificações.
-6. Implementar medicamentos e histórico por dose.
-7. Implementar objetivos, progresso e sugestões locais de disponibilidade.
-8. Implementar temas, acessibilidade, acesso e recuperação.
-9. Validar com a Fabi, corrigir problemas e documentar instalação e uso.
-
-A sequência pode mudar por dependência técnica; não há prazos assumidos.
-
-## Estrutura conceitual de dados
-
-| Entidade | Responsabilidade |
+| Área | Estado |
 |---|---|
-| Evento/tarefa | Dados editáveis e modalidade de agendamento |
-| Série recorrente | Regra de repetição e alterações futuras |
-| Ocorrência | Conclusão, exceções e horário de uma instância |
-| Participante | Nome e avatar selecionado |
-| Categoria | Nome, imagem e cor |
-| Lembrete | Antecedência e vínculo com evento/dose |
-| Objetivo | Medida, alvo, período e preferência de incentivo |
-| Registro de atividade | Realizado efetivo e vínculo opcional com ocorrência |
-| Medicamento | Nome, dose informada e programação |
-| Dose prevista | Horário e confirmação individual |
-| Preferências | Tema, acessibilidade, disponibilidade e silêncio |
+| Navegação e telas principais | Implementadas em React Native |
+| Persistência | AsyncStorage local, gravações serializadas, falhas informadas |
+| PIN e recuperação | Implementados; PBKDF2 e SecureStore no iOS |
+| Face ID | Integração implementada; aguarda teste em aparelho |
+| Eventos e recorrências | CRUD, exceções e divisão de série futura |
+| Conflitos | Sobreposição de horários; recorrências verificadas por até 366 dias |
+| Dia inteiro | Bloqueia sugestões de horário |
+| Pendências | Remarcação explícita, sem mover medicamentos |
+| Medicamentos | Cadastro separado, dias/horários/foto, confirmação por dose e histórico preservado |
+| Objetivos | Metas em tempo diárias/mensais; tempo real e sugestões dentro da disponibilidade |
+| Personalização | Cinco temas, cor, fonte de título, tamanho e decoração |
+| Notificações | Integração silenciosa e fila de próximos 60 avisos; aguarda validação iOS |
+| Ícone | Criado e incluído no projeto |
 
-É uma proposta de organização, não um esquema de banco já aprovado ou implementado.
+## Limitações desta primeira versão
 
-## Validações essenciais
+- Ainda sem build nativo assinado, IPA ou instalação no aparelho.
+- Meta por páginas/livro e tela específica de aniversários ainda não implementadas. Aniversários podem ser cadastrados como eventos anuais com destaque e lembretes; campos específicos de relação/foto/nascimento ficam para refinamento.
+- Incentivos de metas são cartões internos ao abrir a agenda. Não há cobrança automática em segundo plano nem configuração de limite de avisos de metas.
+- Seleção de duração para encontrar horário usa até 30 minutos por sugestão; pode-se editar duração/data antes de salvar. Não divide automaticamente uma meta longa em várias sessões.
+- Checklist e entrada de data/hora são funcionais, mas podem receber seletores nativos e edição mais detalhada em refinamento.
+- Imagens originais de referência possuem fundos e resoluções variados. Foram preservadas; preparar transparência uniforme é melhoria visual, não requisito para funcionar offline.
+- Sem criptografia própria do banco da agenda, backup ou exportação dos dados pessoais.
+- A cobertura das notificações é limitada aos próximos 60 avisos e exibida em Ajustes; exige reabertura periódica. Não há promessa de cobertura indefinida.
+- Edição de uma ocorrência gera novo identificador para separar da série. Registros passados permanecem; itens de checklist não são migrados automaticamente para uma ocorrência substituída.
 
-- Criar, editar e consultar dados sem rede; reabrir o app sem perder alterações.
-- Exibir apenas destaques no mês e permitir abrir o dia completo.
-- Não gerar conflito por uma tarefa sem horário.
-- Editar uma ocorrência sem modificar as demais; editar futuras sem apagar histórico.
-- Não transferir pendências ou doses automaticamente.
-- Atualizar/cancelar notificações ao alterar eventos, com teste no iPhone.
-- Confirmar um medicamento sem confirmar outro no mesmo horário; corrigir enganos.
-- Contabilizar tempo real sem duplicação e inserir sugestão somente após confirmação.
-- Aplicar temas sem perder dados, participantes ou legibilidade.
-- Validar PIN, Face ID opcional e código de recuperação; não armazenar segredos no Git.
-- Conferir telas pequenas, texto maior, contraste e rótulos de acessibilidade.
+## Verificação
 
-## Manutenção documental
+Ver relatório VALIDACAO.md para comandos e resultados executados. Bundles web e iOS são empacotamentos de JavaScript/recursos, não evidência de compilação nativa.
 
-Atualizar requisitos quando houver decisão aprovada; registrar alterações e limitações reais junto com o código. README deve distinguir funcionalidades previstas, implementadas e validadas.
+## Próxima etapa indispensável
+
+Conectar conta Expo/Apple e escolher assinatura/distribuição, então testar no iPhone da Fabi. Corrigir qualquer diferença encontrada antes de uso com dados reais.

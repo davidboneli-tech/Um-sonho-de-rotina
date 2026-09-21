@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Um sonho de rotina",
+    "slug": "um-sonho-de-rotina",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.davidboneli.umsonhoderotina",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Use o Face ID para abrir sua agenda.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-notifications",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Use o Face ID para abrir sua agenda."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Escolha uma foto para identificar seu medicamento.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      "expo-font"
+    ],
+    "web": {
+      "bundler": "metro"
+    },
+    "updates": {
+      "enabled": false
+    },
+    "icon": "./assets/icon.png"
+  }
+}
