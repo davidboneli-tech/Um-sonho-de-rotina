@@ -137,7 +137,8 @@ export async function deliver(env, now = Date.now(), transport = fetch) {
       const current = await env.DB.prepare("SELECT id FROM reminders WHERE device=? AND id=? AND lease=? AND state='sending'").bind(row.device, row.id, lease).first();
       if (!current) continue;
       stage = "envio";
-      const result = await transport(subscription.endpoint, { ...payload, redirect: "error", signal: AbortSignal.timeout(10000) });
+      // Workers supports manual/follow only. A 3xx is rejected below, never followed.
+      const result = await transport(subscription.endpoint, { ...payload, redirect: "manual", signal: AbortSignal.timeout(10000) });
       providerStatus = result.status;
       console.log("push_result", { status: providerStatus, attempt: row.attempts, test: !!row.is_test });
       stage = "registro";
