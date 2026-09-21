@@ -10,6 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Settings } from "./domain";
+import { Decoration } from "./Decoration";
 import { illustrations, people } from "./assets";
 export const themes = [
   {
@@ -109,20 +110,10 @@ export function Txt({ children, muted = false, style, ...rest }: any) {
 }
 export function Title({ children, small = false }: any) {
   const t = useTheme();
-  return (
-    <Text
-      accessibilityRole="header"
-      style={{
-        color: t.ink,
-        fontFamily: t.heading,
-        fontSize: small ? 22 : 30,
-        lineHeight: small ? 29 : 38,
-        marginVertical: 8,
-      }}
-    >
-      {children}
-    </Text>
-  );
+  return <View style={{flexDirection:"row", alignItems:"center", gap:6, marginVertical:8}}>
+    <Text accessibilityRole="header" style={{color:t.ink, fontFamily:t.heading, fontSize:small?22:30, lineHeight:small?29:38, flexShrink:1}}>{children}</Text>
+    {!small && !!t.settings.decoration && !!t.motif && <View pointerEvents="none"><Decoration color={t.primary} width={t.settings.decoration===2?54:42} rich={t.settings.decoration===2}/></View>}
+  </View>;
 }
 export function Button({
   children,
@@ -322,21 +313,9 @@ export function Segments({ values, value, onChange }: {values:string[];value:str
   </View>;
 }
 export function Flourish() {
-  const t = useTheme();
+  const t=useTheme();
   if (!t.settings.decoration || !t.motif) return null;
-  return (
-    <Text
-      accessible={false}
-      style={{
-        color: t.primary,
-        fontSize: 32,
-        textAlign: "right",
-        opacity: 0.6,
-      }}
-    >
-      {t.settings.decoration === 2 ? `${t.motif}  ♡  ${t.motif}` : t.motif}
-    </Text>
-  );
+  return <View pointerEvents="none" accessible={false} style={{alignItems:"flex-end",paddingVertical:5}}><Decoration color={t.primary} width={t.settings.decoration===2?118:88} rich={t.settings.decoration===2}/></View>;
 }
 export function Page({ children }: any) {
   return (
