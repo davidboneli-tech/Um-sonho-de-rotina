@@ -305,10 +305,6 @@ export function EventForm({
         }}
         placeholder="0, 30, 1440"
       />
-      <Txt muted>
-        No PWA, este campo apenas guarda sua preferência. Não envia avisos
-        com o app fechado. Configure os lembretes no próprio iPhone.
-      </Txt>
       {!!error && <Txt style={{ color: "#A22D45" }}>{error}</Txt>}
       {!!conflicts.length && (
         <Card>
