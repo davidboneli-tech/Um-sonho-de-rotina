@@ -305,6 +305,7 @@ export function EventForm({
         }}
         placeholder="0, 30, 1440"
       />
+      <Txt muted>{"0 → no horário.\n15 → 15 minutos antes.\n0, 15 → nos dois momentos.\nCampo vazio → sem lembrete."}</Txt>
       {!!error && <Txt style={{ color: "#A22D45" }}>{error}</Txt>}
       {!!conflicts.length && (
         <Card>
