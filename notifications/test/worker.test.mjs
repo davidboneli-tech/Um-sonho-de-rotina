@@ -63,6 +63,7 @@ test("real Web Push encryption, successful delivery and duplicate suppression", 
   const x = setup(); await x.subscribe(); await x.sync([notice]); let calls = 0;
   const transport = async (endpoint, options) => {
     calls++; assert.equal(endpoint, x.sub.endpoint);
+    assert.equal(options.redirect, "manual");
     const headers = new Headers(options.headers);
     assert.equal(headers.get("content-encoding"), "aes128gcm");
     assert.match(headers.get("authorization"), /^vapid /);
@@ -84,6 +85,18 @@ test("retry after provider failure, expired subscriptions and stale event cutoff
   await x.subscribe(); await x.sync([notice]); let calls = 0;
   await deliver(x.env, now + 12 * 60000, async () => { calls++; return new Response(null, { status: 201 }); });
   assert.equal(calls, 0);
+});
+test("redirects fail without forwarding notification credentials", async () => {
+  const x = setup(); await x.subscribe(); await x.sync([notice]);
+  let calls = 0;
+  await deliver(x.env, now + 61000, async (endpoint, options) => {
+    calls++;
+    assert.equal(endpoint, x.sub.endpoint);
+    assert.equal(options.redirect, "manual");
+    return new Response(null, { status: 302, headers: { Location: "https://untrusted.example" } });
+  });
+  assert.equal(calls, 1);
+  assert.equal(x.db.prepare("SELECT state FROM reminders").get().state, "failed");
 });
 test("preserve the test reminder during sync and reject missing devices", async () => {
   const x = setup(); await x.subscribe(); await x.sync([notice]);
