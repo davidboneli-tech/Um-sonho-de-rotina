@@ -9,7 +9,7 @@
   "d1_databases": [{
     "binding": "DB",
     "database_name": "sonho-notificacoes",
-    "database_id": "REPLACE_WITH_CREATED_DATABASE_ID",
+    "database_id": "292abafa-6615-4706-878f-5ee7bc2aebe0",
     "migrations_dir": "migrations"
   }]
 }
