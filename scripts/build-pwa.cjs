@@ -11,15 +11,19 @@ fs.writeFileSync(path.join(root,'index.html'), html);
 const walk = dir => fs.readdirSync(dir,{withFileTypes:true}).flatMap(e => e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]);
 const files = walk(root).filter(f=> !f.endsWith('/sw.js') && !f.endsWith('.map'));
 const hash = crypto.createHash('sha256');
+hash.update(fs.readFileSync(__filename));
 files.forEach(f => hash.update(fs.readFileSync(f)));
 const version = hash.digest('hex').slice(0,16);
-const urls = files.map(f => './'+path.relative(root,f).split(path.sep).join('/'));
+const urls = files.map(f => path.relative(root,f) === 'index.html' ? './' : './'+path.relative(root,f).split(path.sep).join('/'));
+if (urls.some(url => /[@ ]/.test(url))) throw new Error('Caminho de recurso incompatível com a hospedagem.');
 fs.writeFileSync(path.join(root,'sw.js'), `const CACHE='sonho-pwa-${version}';
 const ASSETS=${JSON.stringify(urls)};
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(async cache => {
  for (const url of ASSETS) {
-  const response = await fetch(new Request(url, {cache:'reload'}));
+  const response = await fetch(new Request(url, {cache:'reload', credentials:'same-origin'}));
   if (!response.ok || response.redirected) throw new Error('Falha ao guardar '+url);
+  const type = response.headers.get('content-type') || '';
+  if (url !== './' && type.includes('text/html')) throw new Error('Conteúdo inesperado em '+url);
   await cache.put(url, response);
  }
 })));
@@ -33,7 +37,7 @@ self.addEventListener('fetch', event => {
  if (event.request.method!=='GET' || url.origin!==self.location.origin || !url.href.startsWith(self.registration.scope)) return;
  const appRoot = new URL('./',self.registration.scope);
  if (event.request.mode==='navigate' && (url.pathname===appRoot.pathname || url.pathname===appRoot.pathname+'index.html')) {
-  event.respondWith(caches.open(CACHE).then(cache=>cache.match('./index.html')).then(r=>r || fetch(event.request)));
+  event.respondWith(caches.open(CACHE).then(cache=>cache.match('./')).then(r=>r || fetch(event.request)));
  } else if (ASSETS.some(a=>new URL(a,self.registration.scope).href===url.href)) {
   event.respondWith(caches.open(CACHE).then(cache=>cache.match(event.request)).then(r=>r || fetch(event.request)));
  }

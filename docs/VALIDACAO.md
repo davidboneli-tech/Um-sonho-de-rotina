@@ -1,3 +1,9 @@
+## Correção do offline no Safari
+
+A verificação HTTP da publicação encontrou dois problemas reais que a primeira simulação não cobria: `/index.html` redireciona para `/`, e as URLs de fontes com `@expo` redirecionavam e retornavam HTML. O instalador offline rejeitava essas respostas; a fonte Ionicons também não carregava no aparelho.
+
+Correções: cache da página pelo endereço canônico `/`, ícones web em SVG embutido (sem fonte externa), rejeição de HTML no lugar de imagens/scripts e limpeza do aviso de erro após nova tentativa bem-sucedida. O pacote web passou de 46 para 27 arquivos. O teste agora reproduz o redirecionamento de index.html e impede URLs de fontes problemáticas no pacote. Os dados locais e suas chaves de armazenamento foram preservados.
+
 ## Entrega Safari/PWA
 
 TypeScript e 12 testes automatizados passaram. Os testes novos validam exportação/restauração do backup e simulam o service worker com a rede desligada: documento e ícones vêm do cache, páginas de autenticação não são interceptadas e a atualização depende da ação da usuária. A exportação web de produção foi concluída.

@@ -25,7 +25,7 @@ export function PwaTools({data, restore}: {data:Data; restore:(d:Data)=>void}) {
   return <>
     <Title small>Instalar no iPhone</Title>
     <Card><Txt>Abra este endereço no Safari, toque em Compartilhar e em Adicionar à Tela de Início. Mantenha “Abrir como App” ativado. Depois abra pelo novo ícone e crie seu PIN ali.</Txt></Card>
-    <Txt>{status.ready ? 'Pronto para usar offline neste aparelho.' : 'Preparando o uso offline. Mantenha a conexão nesta primeira abertura.'}</Txt>
+    <Txt>{status.ready ? 'Pronto para usar offline neste aparelho.' : status.error ? 'O acesso offline ainda não está pronto.' : 'Preparando o uso offline. Mantenha a conexão nesta primeira abertura.'}</Txt>
     {!!status.error && <Txt>{status.error}</Txt>}
     {status.update ? <Button outline onPress={applyUpdate}>Atualizar agora e reabrir</Button> : <Button outline onPress={()=>checkUpdate().then(()=>setMessage('Verificação concluída. Se houver atualização, a opção aparecerá acima.')).catch(()=>setMessage('Sem conexão para verificar atualizações.'))}>Verificar atualização</Button>}
     <Title small>Backup da agenda</Title>

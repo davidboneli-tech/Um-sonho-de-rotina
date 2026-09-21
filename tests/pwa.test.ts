@@ -16,8 +16,13 @@ test('PWA caches whole app and serves app and pictures without network', {skip:!
  const caches={open:async(name:string)=>{if(!stores.has(name))stores.set(name,new Map());const s=stores.get(name)!;return {put:async(r:any,v:any)=>s.set(key(r),v),match:async(r:any)=>s.get(key(r))};},keys:async()=>[...stores.keys()],delete:async(n:string)=>stores.delete(n)};
  const context={URL,Request:class{url:string;constructor(url:string){this.url=key(url);}}, caches,
  self:{location:{origin:new URL(origin).origin},registration:{scope:origin},addEventListener:(n:string,f:Function)=>handlers[n]=f,clients:{claim:async()=>{}},skipWaiting:()=>{applied=true;}},
- fetch:async(r:any)=>{calls++;if(!online)throw Error('offline');return {ok:true,redirected:false,body:readFileSync('dist/'+new URL(key(r)).pathname.slice(1))};}};
- vm.runInNewContext(readFileSync('dist/sw.js','utf8'),context);
+ fetch:async(r:any)=>{calls++;if(!online)throw Error('offline');const pathname=new URL(key(r)).pathname; if(pathname==='/index.html') return {ok:true,redirected:true};
+ return {ok:true,redirected:false,headers:{get:()=>pathname==='/'?'text/html':'application/octet-stream'},body:readFileSync('dist/'+(pathname==='/'?'index.html':pathname.slice(1)))};}};
+ const source=readFileSync('dist/sw.js','utf8');
+ const assets=JSON.parse(source.match(/const ASSETS=(\[.*?\]);/)![1]);
+ assert.ok(assets.includes('./')); assert.ok(!assets.includes('./index.html'));
+ assert.ok(assets.every((a:string)=>!a.includes('@') && !a.endsWith('.ttf')));
+ vm.runInNewContext(source,context);
  let pending:Promise<any>=Promise.resolve();handlers.install({waitUntil:(p:Promise<any>)=>pending=p});await pending;
  handlers.activate({waitUntil:(p:Promise<any>)=>pending=p});await pending;
  assert.ok([...stores.values()][0].size>20); const priorCalls=calls;online=false;

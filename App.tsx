@@ -9,7 +9,7 @@ import {
   Image,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { NavIcon } from "./src/NavIcon";
 import { StatusBar } from "expo-status-bar";
 import {
   Data,
@@ -1371,7 +1371,7 @@ function Shell({ children, tab, setTab, unlocked }: any) {
                 justifyContent: "center",
               }}
             >
-              <Ionicons
+              <NavIcon
                 name={icons[i]}
                 size={24}
                 color={tab === name ? t.primary : "#756C76"}
