@@ -229,10 +229,10 @@ export function GoalCard({ data, goal, edit, record, find, pause }: any) {
     ratio = Math.min(1, done / goal.target);
   return (
     <Card alternate={goal.image === 3}>
-      <View style={styles.spread}>
-        <View style={styles.row}>
+      <View style={[styles.spread, { flexWrap: "wrap" }]}>
+        <View style={[styles.row, { flexGrow: 1, flexShrink: 1, flexBasis: 200, minWidth: 0 }]}>
           <Art index={goal.image} size={60} />
-          <View>
+          <View style={{ flex: 1, minWidth: 0 }}>
             <Title small>{goal.title}</Title>
             <Txt muted>
               {goal.period === "daily" ? "Meta diária" : "Meta mensal"}

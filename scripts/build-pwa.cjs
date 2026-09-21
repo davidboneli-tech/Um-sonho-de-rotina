@@ -5,8 +5,10 @@ const root = path.resolve(__dirname, '../dist');
 const manifest = { id: './', name: 'Um sonho de rotina', short_name: 'Minha rotina', lang: 'pt-BR', start_url: './', scope: './', display: 'standalone', orientation: 'portrait', background_color: '#FCF8F2', theme_color: '#FCF8F2', icons: [192,512].map(n => ({src:`icon-${n}.png`,sizes:`${n}x${n}`,type:'image/png',purpose:'any'})) };
 fs.writeFileSync(path.join(root, 'manifest.webmanifest'), JSON.stringify(manifest));
 let html = fs.readFileSync(path.join(root,'index.html'),'utf8');
-html = html.replace('lang="en"','lang="pt-BR"').replace('shrink-to-fit=no','shrink-to-fit=no, viewport-fit=cover');
+html = html.replace('lang="en"','lang="pt-BR"').replace('shrink-to-fit=no','shrink-to-fit=no, viewport-fit=cover, maximum-scale=1, user-scalable=no');
 html = html.replace('</head>', `<meta name="theme-color" content="#FCF8F2"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Minha rotina"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-180.png"><style>body{background:#FCF8F2}#root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);box-sizing:border-box}input,textarea{font-size:16px}</style></head>`);
+// Keep ordinary scrolling (including horizontal illustration pickers), without pinch zoom.
+html = html.replace('</head>', `<style>html,body,#root{width:100%;max-width:100%;overflow-x:hidden;touch-action:pan-x pan-y}#root *{overscroll-behavior-x:none}</style><script>document.addEventListener('gesturestart',function(event){event.preventDefault();},{passive:false});document.addEventListener('gesturechange',function(event){event.preventDefault();},{passive:false});</script></head>`);
 fs.writeFileSync(path.join(root,'index.html'), html);
 const walk = dir => fs.readdirSync(dir,{withFileTypes:true}).flatMap(e => e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]);
 const files = walk(root).filter(f=> !f.endsWith('/sw.js') && !f.endsWith('.map'));
