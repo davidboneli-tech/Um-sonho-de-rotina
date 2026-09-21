@@ -9,6 +9,24 @@ test('backup round trip and invalid input preserves validation boundary', () => 
  assert.throws(()=>parseBackup('{"format":"sonho-backup-v1","data":{"version":1}}'));
  const broken=emptyData(); broken.settings.availableStart='99:99'; assert.throws(()=>parseBackup(backupText(broken)));
 });
+test('push displays a silent notification and click opens only this agenda', {skip:!existsSync('dist/sw.js')}, async()=>{
+ const handlers:Record<string,Function>={}; let notification:any, opened='', closed=false;
+ const scope='https://planner.example/';
+ vm.runInNewContext(readFileSync('dist/sw.js','utf8'), {
+  URL, Date,
+  self:{location:{origin:'https://planner.example'}, registration:{scope,showNotification:async(title:string,options:any)=>{notification={title,...options};}},
+   addEventListener:(name:string,fn:Function)=>handlers[name]=fn,
+   clients:{matchAll:async()=>[],openWindow:async(url:string)=>{opened=url;}}}
+ });
+ let promise:Promise<any>=Promise.resolve();
+ handlers.push({data:{json:()=>({body:'Lembrete de teste',tag:'test:1',at:Date.now(),url:'https://attacker.example'})},waitUntil:(p:Promise<any>)=>promise=p});
+ await promise; assert.equal(notification.silent,true); assert.equal(notification.renotify,false);
+ assert.equal(notification.body,'Lembrete de teste'); assert.equal(notification.data.url,scope);
+ handlers.notificationclick({notification:{...notification,close:()=>{closed=true;}},waitUntil:(p:Promise<any>)=>promise=p});
+ await promise; assert.ok(closed); assert.equal(opened,scope);
+ handlers.push({data:{json:()=>{throw Error('invalid');}},waitUntil:(p:Promise<any>)=>promise=p});
+ await promise; assert.match(notification.body,/Abra a agenda/);
+});
 test('PWA caches whole app and serves app and pictures without network', {skip:!existsSync('dist/sw.js')}, async()=>{
  const handlers:Record<string,Function>={}, stores=new Map<string,Map<string,any>>();
  const origin='https://example.test/'; let online=true, calls=0, applied=false;

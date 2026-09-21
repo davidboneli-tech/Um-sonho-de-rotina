@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Platform } from "react-native";
 import { PwaTools } from "./PwaTools";
+import { WebPushControls } from "./WebPushControls";
 import { Data } from "./domain";
 import {
   Settings as Preferences,
@@ -29,6 +30,7 @@ export function SettingsPage({
   save,
   alerts,
   enableAlerts,
+  refreshAlerts,
   lock,
 }: {
   settings: Preferences;
@@ -36,7 +38,8 @@ export function SettingsPage({
   restore: (data: Data) => void;
   save: (s: Preferences) => void;
   alerts: string;
-  enableAlerts: () => void;
+  enableAlerts: () => Promise<void>;
+  refreshAlerts: () => void;
   lock: () => void;
 }) {
   const [draft, set] = useState(settings),
@@ -163,11 +166,12 @@ export function SettingsPage({
           Aplicar alterações
         </Button>
         {applied && <Txt>Alterações aplicadas.</Txt>}
-        <Title small>Lembretes silenciosos</Title>
+        <Title small>Lembretes</Title>
         <Txt>{alerts}</Txt>
         {Platform.OS !== "web" && <Button outline onPress={enableAlerts}>
           Ativar ou renovar notificações
         </Button>}
+        {Platform.OS === "web" && <WebPushControls enable={enableAlerts} refresh={refreshAlerts} />}
         {Platform.OS === "web" && <PwaTools data={data} restore={restore} />}
         <Txt muted>
           Sem sons, vibrações programadas ou animações. A imagem da Fabi é

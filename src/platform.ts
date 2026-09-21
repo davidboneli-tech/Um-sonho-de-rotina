@@ -1,4 +1,5 @@
 import { notificationCandidates } from "./notificationModel";
+import { enableWebPush, syncWebPush } from "./webPush";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as SecureStore from "expo-secure-store";
@@ -102,9 +103,7 @@ if (Platform.OS !== "web")
   });
 export async function requestAlerts(): Promise<boolean> {
   if (Platform.OS === "web")
-    throw new Error(
-      "Este PWA não envia lembretes com o app fechado. Configure os avisos no Relógio ou Lembretes do iPhone.",
-    );
+    return enableWebPush();
   const p = await Notifications.requestPermissionsAsync({
     ios: { allowAlert: true, allowBadge: false, allowSound: false },
   });
@@ -119,7 +118,7 @@ export function syncAlerts(data: Data): Promise<string> {
     .catch(() => "")
     .then(async () => {
       if (Platform.OS === "web")
-        return "Neste PWA, os horários ficam na agenda, mas não geram notificações com o app fechado. Configure os avisos separadamente no Relógio ou Lembretes do iPhone.";
+        return syncWebPush(data);
       const permission = await Notifications.getPermissionsAsync();
       if (
         !permission.granted &&

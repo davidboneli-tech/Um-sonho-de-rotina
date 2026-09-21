@@ -41,5 +41,30 @@ self.addEventListener('fetch', event => {
  } else if (ASSETS.some(a=>new URL(a,self.registration.scope).href===url.href)) {
   event.respondWith(caches.open(CACHE).then(cache=>cache.match(event.request)).then(r=>r || fetch(event.request)));
  }
+});
+self.addEventListener('push', event => event.waitUntil((async()=>{
+ let item = {};
+ try { item = event.data ? event.data.json() : {}; } catch {}
+ const at = Number(item.at);
+ const late = Number.isFinite(at) && Date.now()-at > 10*60000;
+ await self.registration.showNotification('Um sonho de rotina', {
+  body: late ? 'Um aviso chegou com atraso. Abra a agenda para conferir seus registros.' : (typeof item.body==='string' ? item.body.slice(0,220) : 'Abra a agenda para conferir seu lembrete.'),
+  icon: new URL('./icon-192.png',self.registration.scope).href,
+  badge: new URL('./icon-192.png',self.registration.scope).href,
+  tag: typeof item.tag==='string' ? item.tag.slice(0,240) : 'sonho-aviso',
+  silent: true,
+  renotify: false,
+  data: {url:new URL('./',self.registration.scope).href}
+ });
+})()));
+self.addEventListener('notificationclick', event => {
+ event.notification.close();
+ event.waitUntil((async()=>{
+  const root = new URL('./',self.registration.scope).href;
+  const windows = await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  const existing = windows.find(client => client.url===root || client.url.startsWith(root+'?'));
+  if(existing) await existing.focus();
+  else await self.clients.openWindow(root);
+ })());
 });`);
 console.log(`PWA: ${files.length} arquivos disponíveis offline. Cache ${version}.`);

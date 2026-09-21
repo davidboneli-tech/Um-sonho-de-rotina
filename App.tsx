@@ -207,6 +207,12 @@ function Application() {
     if (loaded && unlocked) refreshAlerts();
   }, [data, loaded, unlocked]);
   useEffect(() => {
+    if (Platform.OS !== "web" || !loaded) return;
+    const reconnect = () => { refreshAlerts(); };
+    window.addEventListener("online", reconnect);
+    return () => window.removeEventListener("online", reconnect);
+  }, [loaded]);
+  useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => {
       if (state === "background") {
         setUnlocked(false);
@@ -551,6 +557,7 @@ function Application() {
           settings={data.settings}
           save={(settings) => change({ settings })}
           alerts={alertStatus}
+          refreshAlerts={refreshAlerts}
           enableAlerts={async () => {
             try {
               if (await requestAlerts()) refreshAlerts();

@@ -1,0 +1,15 @@
+{
+  "name": "sonho-notificacoes",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-09-01",
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "APP_ORIGIN": "https://um-sonho-de-rotina.david-boneli.chatgpt.site"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "sonho-notificacoes",
+    "database_id": "REPLACE_WITH_CREATED_DATABASE_ID",
+    "migrations_dir": "migrations"
+  }]
+}

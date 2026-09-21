@@ -1,0 +1,5 @@
+node_modules/
+.wrangler/
+build/
+.push-secrets.json
+.dev.vars*

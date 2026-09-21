@@ -1,0 +1,13 @@
+{
+  "name": "sonho-notificacoes",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "wrangler deploy --dry-run --outdir build",
+    "deploy": "wrangler deploy",
+    "keys": "node scripts/keys.mjs"
+  },
+  "dependencies": { "@block65/webcrypto-web-push": "2.0.0" },
+  "devDependencies": { "wrangler": "^4.0.0" }
+}
