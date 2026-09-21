@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { View, Platform } from "react-native";
+import { PwaTools } from "./PwaTools";
+import { Data } from "./domain";
 import {
   Settings as Preferences,
   defaultSettings,
@@ -22,12 +24,16 @@ import {
 } from "./ui";
 export function SettingsPage({
   settings,
+  data,
+  restore,
   save,
   alerts,
   enableAlerts,
   lock,
 }: {
   settings: Preferences;
+  data: Data;
+  restore: (data: Data) => void;
   save: (s: Preferences) => void;
   alerts: string;
   enableAlerts: () => void;
@@ -159,9 +165,10 @@ export function SettingsPage({
         {applied && <Txt>Alterações aplicadas.</Txt>}
         <Title small>Lembretes silenciosos</Title>
         <Txt>{alerts}</Txt>
-        <Button outline onPress={enableAlerts}>
+        {Platform.OS !== "web" && <Button outline onPress={enableAlerts}>
           Ativar ou renovar notificações
-        </Button>
+        </Button>}
+        {Platform.OS === "web" && <PwaTools data={data} restore={restore} />}
         <Txt muted>
           Sem sons, vibrações programadas ou animações. A imagem da Fabi é
           estática.

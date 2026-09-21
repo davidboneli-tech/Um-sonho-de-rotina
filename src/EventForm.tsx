@@ -306,8 +306,8 @@ export function EventForm({
         placeholder="0, 30, 1440"
       />
       <Txt muted>
-        Deixe vazio para não avisar. Sem horário: referência às 9h; tarde às
-        14h; noite às 19h. Todos os avisos são silenciosos.
+        No PWA, este campo apenas guarda sua preferência. Não envia avisos
+        com o app fechado. Configure os lembretes no próprio iPhone.
       </Txt>
       {!!error && <Txt style={{ color: "#A22D45" }}>{error}</Txt>}
       {!!conflicts.length && (

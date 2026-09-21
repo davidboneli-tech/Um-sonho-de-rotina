@@ -4,32 +4,26 @@ Agenda pessoal para a Fabíola, criada por David Boneli: compromissos, tarefas, 
 
 > O aplicativo deve se adaptar à rotina da Fabi, e não obrigar a Fabi a se adaptar ao aplicativo.
 
-## Versão 0.1.0 — implementação inicial
+## Versão Safari (PWA)
 
-Código React Native + Expo, preparado para iPhone e editável no Windows. **Sem sons e sem animações.** Avatar estático da Fabi no acesso quando os arquivos pessoais são adicionados localmente. Sem esses arquivos, aparece o ícone do planner. Dados e imagens ficam locais na versão instalada.
+O caminho escolhido é a instalação pelo Safari, sem assinatura Apple ou Expo.
+Agenda, medicamentos, objetivos, personalização e PIN funcionam no navegador; o app guarda os arquivos necessários para abrir sem internet após a primeira carga completa.
 
-**Ainda não é um instalador assinado para iPhone.** TypeScript, testes da lógica e empacotamento JavaScript são verificáveis neste ambiente; Face ID, notificações e instalação precisam de validação no aparelho. Consulte [estado e limites](docs/IMPLEMENTACAO.md).
+**Não envia notificações com o app fechado e não oferece Face ID.** Configure avisos necessários no próprio iPhone. Sem sons nem animações.
 
-## Executar no Windows
+Em Ajustes há instruções de instalação, status offline, atualização e exportação/restauração de backup. Os registros ficam neste navegador/aparelho, sem sincronização. O PIN controla a entrada, mas não criptografa os dados. O backup JSON também não é criptografado e não inclui o PIN.
 
-Instale Node.js LTS compatível com Expo SDK 57 e Git. No PowerShell:
+### Executar e gerar no Windows
 
 ```powershell
-git clone https://github.com/davidboneli-tech/Um-sonho-de-rotina.git
-cd Um-sonho-de-rotina
 npm ci
 npm run web
+npm run build
 ```
 
-A versão web serve para conferir a interface usando dados fictícios. Não agenda notificações locais no iPhone, não tem Face ID e não é a entrega offline nativa.
+O comando `build` gera o site instalável em `dist`. Sirva essa pasta por HTTPS. `npm run web` é desenvolvimento e não habilita o cache offline. Veja [instruções Safari](docs/INSTALACAO-SAFARI.md).
 
-Para trabalhar com o projeto Expo:
-
-```powershell
-npm start
-```
-
-Para criar a versão instalada no iPhone, veja [INSTALACAO.md](docs/INSTALACAO.md). O perfil EAS está preparado, mas nenhum build pago, assinatura Apple ou publicação foi iniciado.
+As opções nativas anteriores permanecem no código para eventual retomada; não foram gerados instaladores IPA ou APK.
 
 ## Implementado
 
@@ -42,7 +36,7 @@ Para criar a versão instalada no iPhone, veja [INSTALACAO.md](docs/INSTALACAO.m
 - Medicamentos independentes, foto opcional, horários e histórico de confirmação.
 - Cinco temas, cor, títulos, tamanho de texto, decoração e disponibilidade.
 - PIN de seis dígitos com derivação PBKDF2, recuperação local e Face ID opcional no iOS.
-- Integração de notificações locais silenciosas, com renovação de até 60 próximos avisos.
+- Notificações locais apenas no código nativo, indisponíveis na instalação pelo Safari.
 
 A primeira abertura não inclui compromissos ou medicamentos de exemplo.
 

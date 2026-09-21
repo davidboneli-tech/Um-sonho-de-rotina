@@ -1,3 +1,5 @@
+> Decisão atual: entrega pelo Safari/PWA, sem assinatura Apple, sons ou animações. Notificações locais nativas e Face ID abaixo são referências para uma eventual versão nativa. Consulte [instalação Safari](INSTALACAO-SAFARI.md).
+
 # Memorial consolidado — Um sonho de rotina
 
 Versão documental: 1.0 · 21/09/2026  

@@ -166,7 +166,7 @@ function Application() {
     [confirmation, setConfirmation] = useState<Confirmation>(null),
     [message, setMessage] = useState(""),
     [alertStatus, setAlertStatus] = useState(
-      "Ative os avisos silenciosos em Ajustes.",
+      Platform.OS === "web" ? "Nesta versão, os horários ficam na agenda; não há avisos com o app fechado." : "Ative os avisos silenciosos em Ajustes.",
     ),
     [goalFilter, setGoalFilter] = useState("Ativos");
   const ref = useRef(data);
@@ -543,6 +543,10 @@ function Application() {
     if (tab === "Ajustes")
       return (
         <SettingsPage
+          data={data}
+          restore={(next) => ask("Restaurar backup?", "Os dados atuais serão substituídos. O PIN deste aparelho será mantido.", [{label: "Substituir e restaurar", run: () => {
+            saveData(next).then(() => { setData(next); setTab("Hoje"); setMessage("Backup restaurado."); }).catch(() => setMessage("Não foi possível restaurar. Os dados atuais foram mantidos."));
+          }}])}
           settings={data.settings}
           save={(settings) => change({ settings })}
           alerts={alertStatus}

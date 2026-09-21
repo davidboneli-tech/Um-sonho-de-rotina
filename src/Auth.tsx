@@ -159,8 +159,8 @@ export function Auth({
       )}
       {Platform.OS === "web" && (
         <Txt muted style={{ fontSize: 12, marginTop: 16 }}>
-          Prévia de desenvolvimento no navegador. Use dados fictícios; o
-          armazenamento seguro do iPhone é validado na versão instalada.
+          Seus dados ficam neste aparelho. O PIN bloqueia a tela, mas não
+          criptografa os registros. Faça backups em Ajustes.
         </Txt>
       )}
       <Flourish />

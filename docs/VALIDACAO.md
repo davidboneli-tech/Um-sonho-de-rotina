@@ -1,3 +1,9 @@
+## Entrega Safari/PWA
+
+TypeScript e 12 testes automatizados passaram. Os testes novos validam exportação/restauração do backup e simulam o service worker com a rede desligada: documento e ícones vêm do cache, páginas de autenticação não são interceptadas e a atualização depende da ação da usuária. A exportação web de produção foi concluída.
+
+Ainda falta validar no Safari físico: instalação pela Tela de Início, encerramento/reabertura em modo avião e exportação de backup para Arquivos. A simulação do cache não substitui esse teste.
+
 # Validação da versão 0.1.0
 
 Executada em ambiente Linux de desenvolvimento em 21/09/2026, com dados fictícios.

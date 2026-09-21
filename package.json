@@ -40,7 +40,8 @@
     "prestart": "node scripts/prepare-assets.cjs",
     "preweb": "node scripts/prepare-assets.cjs",
     "pretypecheck": "node scripts/prepare-assets.cjs",
-    "pretest": "node scripts/prepare-assets.cjs"
+    "pretest": "node scripts/prepare-assets.cjs",
+    "build": "node scripts/prepare-assets.cjs --public && expo export --platform web --output-dir dist && node scripts/build-pwa.cjs"
   },
   "private": true
 }
