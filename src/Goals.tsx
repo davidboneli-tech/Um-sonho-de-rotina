@@ -28,7 +28,7 @@ import {
 } from "./ui";
 import { fabiScenes, illustrations } from "./assets";
 import { goalScene } from "./companion";
-import { FabiMessage } from "./FabiMoment";
+import { goalAmount, goalMinutes } from "./goalUnits";
 export function GoalForm({
   value,
   save,
@@ -49,7 +49,7 @@ export function GoalForm({
       encouragement: "gentle",
     },
   );
-  const [hours, setHours] = useState(String(g.target / 60)),
+  const [hours, setHours] = useState(String(g.period === "daily" ? g.target : g.target / 60)),
     [error, setError] = useState("");
   return (
     <Page>
@@ -66,14 +66,19 @@ export function GoalForm({
       <ArtPicker value={g.image} onChange={(image) => set({ ...g, image })} />
       <Txt muted>{illustrations[g.image]?.name}</Txt>
       <Field
-        label="Meta em horas"
+        label={g.period === "daily" ? "Meta em minutos por dia" : "Meta em horas por mês"}
         value={hours}
         onChangeText={setHours}
         keyboardType="decimal-pad"
       />
       <Choices
         value={g.period}
-        onChange={(period) => set({ ...g, period })}
+        onChange={(period) => {
+          if (period === g.period) return;
+          const minutes = goalMinutes(hours, g.period);
+          if (minutes !== null) setHours(String(period === "daily" ? minutes : minutes / 60));
+          set({ ...g, period });
+        }}
         values={[
           { label: "Por dia", value: "daily" },
           { label: "Por mês", value: "monthly" },
@@ -96,12 +101,12 @@ export function GoalForm({
       {!!error && <Txt style={{ color: "#A02D43" }}>{error}</Txt>}
       <Button
         onPress={() => {
-          const h = Number(hours.replace(",", "."));
-          if (!g.title.trim() || !Number.isFinite(h) || h <= 0 || h > 744) {
-            setError("Informe título e uma meta válida em horas.");
+          const minutes = goalMinutes(hours, g.period);
+          if (!g.title.trim() || minutes === null) {
+            setError(g.period === "daily" ? "Informe título e uma meta de 1 a 1440 minutos." : "Informe título e uma meta de até 744 horas (mínimo de 1 minuto).");
             return;
           }
-          save({ ...g, title: g.title.trim(), target: Math.round(h * 60) });
+          save({ ...g, title: g.title.trim(), target: minutes });
           close();
         }}
       >
@@ -121,7 +126,7 @@ export function ActivityForm({
   save: (minutes: number, date: string) => void;
   close: () => void;
 }) {
-  const [duration, setDuration] = useState("30"),
+  const [duration, setDuration] = useState(goal.period === "daily" ? "30" : "0,5"),
     [date, setDate] = useState(toBrazil(occurrence?.date || dayKey())),
     [error, setError] = useState("");
   return (
@@ -133,10 +138,10 @@ export function ActivityForm({
       <Art index={goal.image} />
       <Title small>{goal.title}</Title>
       <Field
-        label="Quantos minutos você realizou?"
+        label={goal.period === "daily" ? "Quantos minutos você realizou?" : "Quantas horas você realizou?"}
         value={duration}
         onChangeText={setDuration}
-        keyboardType="number-pad"
+        keyboardType={goal.period === "daily" ? "number-pad" : "decimal-pad"}
       />
       {!occurrence && (
         <Field label="Data (DD/MM/AAAA)" value={date} onChangeText={setDate} />
@@ -147,16 +152,15 @@ export function ActivityForm({
       {!!error && <Txt>{error}</Txt>}
       <Button
         onPress={() => {
-          const n = Number(duration),
+          const n = goalMinutes(duration, goal.period),
             d = fromBrazil(date);
           if (
-            !Number.isInteger(n) ||
-            n <= 0 ||
+            n === null ||
             n > 1440 ||
             !validDay(d) ||
             d > dayKey()
           ) {
-            setError("Informe tempo de 1 a 1440 minutos e uma data até hoje.");
+            setError(goal.period === "daily" ? "Informe tempo de 1 a 1440 minutos e uma data até hoje." : "Informe até 24 horas (mínimo de 1 minuto) e uma data até hoje.");
             return;
           }
           save(n, d);
@@ -172,17 +176,17 @@ export function Suggestion({
   data,
   goal,
   onSchedule,
+  onDismiss,
 }: {
   data: Data;
   goal: Goal;
   onSchedule: (g: Goal, start: string, end: string) => void;
+  onDismiss: () => void;
 }) {
-  const [dismiss, setDismiss] = useState(false);
   const remaining = goal.target - goalProgress(data, goal, dayKey());
   const duration = Math.min(30, remaining),
     slots = freeSlots(data, dayKey(), duration);
   if (
-    dismiss ||
     goal.paused ||
     goal.encouragement === "off" ||
     remaining <= 0 ||
@@ -201,7 +205,7 @@ export function Suggestion({
           <Txt style={{ fontWeight: "700" }}>Uma ideia para hoje</Txt>
           <Txt>
             {goal.encouragement === "firm"
-              ? `Faltam ${remaining} minutos para sua meta. `
+              ? `Faltam ${goalAmount(remaining, goal.period)} para sua meta. `
               : ""}
             Que tal {duration} minutos de {goal.title.toLowerCase()} às{" "}
             {slots[0].start}?
@@ -217,7 +221,7 @@ export function Suggestion({
           </Button>
         </View>
         <View style={{ flex: 1 }}>
-          <Button outline onPress={() => setDismiss(true)}>
+          <Button outline onPress={onDismiss}>
             Agora não
           </Button>
         </View>
@@ -247,7 +251,7 @@ export function GoalCard({ data, goal, edit, record, find, pause }: any) {
         </Button>
       </View>
       <Title small>
-        {done} de {goal.target} minutos
+        {goalAmount(done, goal.period, false)} de {goalAmount(goal.target, goal.period)}
       </Title>
       <View
         accessibilityLabel={`${Math.round(ratio * 100)}% da meta`}
@@ -266,8 +270,7 @@ export function GoalCard({ data, goal, edit, record, find, pause }: any) {
           }}
         />
       </View>
-      <Txt muted>{Math.max(0, goal.target - done)} minutos restantes</Txt>
-      {!goal.paused && ratio >= 1 && <FabiMessage scene="celebrate" title="Meta alcançada!" body={goal.period === "daily" ? "Você completou sua meta de hoje. Cada passo conta!" : "Você completou sua meta deste mês. Que conquista!"} />}
+      <Txt muted>{goalAmount(Math.max(0, goal.target - done), goal.period)} restantes</Txt>
       <Button onPress={record}>Registrar atividade</Button>
       <Button outline onPress={find}>
         Encontrar horário

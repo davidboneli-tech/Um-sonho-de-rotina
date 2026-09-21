@@ -61,6 +61,7 @@ import { Auth } from "./src/Auth";
 import { EventForm } from "./src/EventForm";
 import { MedicineForm } from "./src/MedicineForm";
 import { GoalForm, ActivityForm, GoalCard, Suggestion } from "./src/Goals";
+import { goalAmount } from "./src/goalUnits";
 import { FabiMoment } from "./src/FabiMoment";
 import { SettingsPage } from "./src/Settings";
 
@@ -171,6 +172,8 @@ function Application() {
       Platform.OS === "web" ? "Verificando os lembretes online…" : "Ative os avisos silenciosos em Ajustes.",
     ),
     [goalFilter, setGoalFilter] = useState("Ativos");
+  const [suggestionDismissed, setSuggestionDismissed] = useState(false);
+  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
   const ref = useRef(data);
   ref.current = data;
   const today = dayKey();
@@ -615,7 +618,11 @@ function Application() {
             </View>
             {view === "Hoje" ? (
               <>
-                {selected === today && <FabiMoment data={data} />}
+                {selected === today && <FabiMoment data={data} celebrationDismissed={celebrationDismissed} onCelebrate={() => {
+                  setCelebrationDismissed(true);
+                  setGoalFilter("Concluídos");
+                  setTab("Objetivos");
+                }} />}
                 {renderEvents(selected)}
                 {dosesOn(data, selected).length > 0 && (
                   <>
@@ -641,8 +648,8 @@ function Application() {
             >
               + Novo compromisso
             </Button>
-            {selected === today && nextGoal && (
-              <Suggestion data={data} goal={nextGoal} onSchedule={schedule} />
+            {selected === today && nextGoal && !suggestionDismissed && (
+              <Suggestion data={data} goal={nextGoal} onSchedule={schedule} onDismiss={() => setSuggestionDismissed(true)} />
             )}
             {pending(data, today).length > 0 && (
               <>
@@ -920,8 +927,8 @@ function Application() {
                 </Txt>
               </Card>
             )}
-            {nextGoal && (
-              <Suggestion data={data} goal={nextGoal} onSchedule={schedule} />
+            {nextGoal && !suggestionDismissed && (
+              <Suggestion data={data} goal={nextGoal} onSchedule={schedule} onDismiss={() => setSuggestionDismissed(true)} />
             )}
             <Title small>Atividades registradas</Title>
             {data.activities
@@ -932,7 +939,7 @@ function Application() {
                 <Card key={a.id}>
                   <Txt>
                     {data.goals.find((g) => g.id === a.goalId)?.title} ·{" "}
-                    {a.minutes} min · {toBrazil(a.date)}
+                    {goalAmount(a.minutes, data.goals.find((g) => g.id === a.goalId)?.period || "daily")} · {toBrazil(a.date)}
                   </Txt>
                   <Button
                     small

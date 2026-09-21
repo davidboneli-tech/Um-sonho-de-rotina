@@ -22,7 +22,7 @@ export function todayMoment(data: Data, now = new Date()): Moment | null {
   });
   if (soon) return { scene: 'reminder', title: 'Daqui a pouco', body: `${soon.event.title} às ${soon.event.start}. Seu próximo compromisso está chegando.` };
   const achieved = data.goals.find(g => !g.paused && goalProgress(data, g, today) >= g.target && data.activities.some(a => a.goalId === g.id && a.date === today));
-  if (achieved) return { scene: 'celebrate', title: 'Uma conquista de hoje!', body: `Você alcançou a meta: ${achieved.title}.` };
+  if (achieved) return { scene: 'celebrate', title: 'Parabéns, você alcançou um objetivo hoje!', body: '' };
   const pendingDose = dosesOn(data, today).some(d => !data.doses[d.key]);
   if (!todo.length && !pendingDose) return { scene: 'rest', title: 'Um respiro para você', body: 'Não há compromissos ou doses pendentes na agenda de hoje. Aproveite uma pausa no seu ritmo.' };
   return null;

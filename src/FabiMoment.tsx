@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AppState, Image, View } from 'react-native';
+import { AppState, Image, View, Pressable } from 'react-native';
 import { Data } from './domain';
 import { fabiScenes } from './assets';
 import { Card, Txt } from './ui';
@@ -10,12 +10,12 @@ export function FabiMessage({ scene, title, body }: Moment) {
     <Image accessible={false} source={fabiScenes[scene]} resizeMode="contain" style={{ width: 76, height: 90, borderRadius: 14, flexShrink: 0 }} />
     <View style={{ flex: 1, minWidth: 0 }}>
       <Txt style={{ fontWeight: '700' }}>{title}</Txt>
-      <Txt muted>{body}</Txt>
+      {!!body && <Txt muted>{body}</Txt>}
     </View>
   </View>;
 }
 
-export function FabiMoment({ data }: { data: Data }) {
+export function FabiMoment({ data, celebrationDismissed, onCelebrate }: { data: Data; celebrationDismissed: boolean; onCelebrate: () => void }) {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const update = () => setNow(new Date());
@@ -24,5 +24,9 @@ export function FabiMoment({ data }: { data: Data }) {
     return () => { clearInterval(timer); subscription.remove(); };
   }, []);
   const moment = todayMoment(data, now);
-  return moment ? <Card alternate><FabiMessage {...moment} /></Card> : null;
+  if (!moment || (moment.scene === 'celebrate' && celebrationDismissed)) return null;
+  if (moment.scene === 'celebrate') return <Pressable accessibilityRole="button" accessibilityLabel="Parabéns, você alcançou um objetivo hoje! Ver objetivos alcançados" onPress={onCelebrate}>
+    <Card alternate><FabiMessage {...moment} /></Card>
+  </Pressable>;
+  return <Card alternate><FabiMessage {...moment} /></Card>;
 }
