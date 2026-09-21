@@ -13,7 +13,7 @@ Serviço provisionado e conectado. Em 21/09/2026, David confirmou o aviso de tes
 - Editar, excluir, pular ou concluir atualiza a programação ao sincronizar. Mudanças sem internet aguardam a conexão com o app aberto; avisos já enviados ao sistema não podem ser recolhidos.
 - O app envia até 4.000 lembretes, calculados dentro de 366 dias. A tela informa até quando estão programados; abrir regularmente renova o período. Não depende de o app permanecer aberto depois de sincronizar.
 - Não há garantia de entrega pontual: execução a cada minuto, conexão, Modo Foco, permissões e sistema operacional podem atrasar/impedir a entrega. Avisos vencidos há mais de dez minutos não são reenviados pelo servidor. TTL de cinco minutos no provedor.
-- `silent: true` pede ausência de som/vibração. Verificar também Sons nos ajustes de notificações do iPhone.
+- `silent: false` permite som conforme as preferências do iPhone. Ative Sons e confira o modo silencioso e o Foco; a emissão sonora real deve ser conferida no aparelho.
 - Sugestões de atividade continuam dentro da agenda; esta etapa envia compromissos configurados e lembretes individuais de medicamentos.
 
 ## Provisionamento de uma instalação nova
@@ -42,7 +42,7 @@ Na pasta `notifications`:
 
 - `npm test` em `notifications`: SQLite real em memória, autorização/CORS, endpoints permitidos, privacidade, atualização/exclusão, criptografia real da biblioteca, repetição, tentativas e inscrições expiradas.
 - `npm run check` em `notifications`: empacotamento de Worker, sem publicação.
-- Testes do projeto principal validam domínio, backup e service worker offline. Teste de push no service worker verifica silêncio e abertura da agenda.
+- Testes do projeto principal validam domínio, backup e service worker offline. Teste de push no service worker verifica permissão de som e abertura da agenda.
 - Confirmados no iPhone: ativação, teste e compromisso real com tela bloqueada. Pendentes no aparelho: edição/exclusão, medicamentos e reconexão após alteração offline.
 
 Fontes técnicas: [WebKit](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/), [Cron Triggers](https://developers.cloudflare.com/workers/configuration/cron-triggers/), [D1](https://developers.cloudflare.com/d1/worker-api/d1-database/), [WebCrypto Web Push](https://github.com/block65/webcrypto-web-push).

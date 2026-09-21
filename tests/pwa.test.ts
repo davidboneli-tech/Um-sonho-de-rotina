@@ -9,7 +9,7 @@ test('backup round trip and invalid input preserves validation boundary', () => 
  assert.throws(()=>parseBackup('{"format":"sonho-backup-v1","data":{"version":1}}'));
  const broken=emptyData(); broken.settings.availableStart='99:99'; assert.throws(()=>parseBackup(backupText(broken)));
 });
-test('push displays a silent notification and click opens only this agenda', {skip:!existsSync('dist/sw.js')}, async()=>{
+test('push allows notification sound and click opens only this agenda', {skip:!existsSync('dist/sw.js')}, async()=>{
  const handlers:Record<string,Function>={}; let notification:any, opened='', closed=false;
  const scope='https://planner.example/';
  vm.runInNewContext(readFileSync('dist/sw.js','utf8'), {
@@ -20,7 +20,7 @@ test('push displays a silent notification and click opens only this agenda', {sk
  });
  let promise:Promise<any>=Promise.resolve();
  handlers.push({data:{json:()=>({body:'Lembrete de teste',tag:'test:1',at:Date.now(),url:'https://attacker.example'})},waitUntil:(p:Promise<any>)=>promise=p});
- await promise; assert.equal(notification.silent,true); assert.equal(notification.renotify,false);
+ await promise; assert.equal(notification.silent,false); assert.equal(notification.renotify,false);
  assert.equal(notification.body,'Lembrete de teste'); assert.equal(notification.data.url,scope);
  handlers.notificationclick({notification:{...notification,close:()=>{closed=true;}},waitUntil:(p:Promise<any>)=>promise=p});
  await promise; assert.ok(closed); assert.equal(opened,scope);

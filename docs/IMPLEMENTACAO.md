@@ -27,7 +27,7 @@ Atualizado em 21/09/2026. Entrega atual: **PWA instalada pelo Safari**, com agen
 - Aniversários usam eventos anuais; não há tela dedicada com cadastro de nascimento/foto.
 - Metas por páginas ou livros não foram implementadas.
 - Edição de uma ocorrência cria identidade própria; checklist não é migrado automaticamente para a ocorrência substituída.
-- Notificações pedem silêncio; sons e animações seguem desativados.
+- Notificações web permitem som conforme os ajustes do iPhone. Animações permanecem desativadas.
 
 ## Verificação e próximos passos
 

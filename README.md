@@ -68,7 +68,7 @@ flowchart TD
 | Receber as notificações programadas. | Alterações aguardam reconexão com o app aberto. |
 | Verificar e baixar atualizações. | Avisos antigos no servidor só são atualizados na próxima sincronização. |
 
-Os avisos são **silenciosos**. A entrega depende da conexão, das permissões e dos ajustes do iPhone; o agendamento é consultado a cada minuto, sem garantia de segundo exato. Sugestões de atividades aparecem **dentro do app**.
+Os avisos permitem **som**, conforme os ajustes de notificações, modo silencioso e Foco do iPhone. A entrega depende da conexão, das permissões e dos ajustes do iPhone; o agendamento é consultado a cada minuto, sem garantia de segundo exato. Sugestões de atividades aparecem **dentro do app**.
 
 O app programa até **4.000 avisos em uma janela de 366 dias** e informa a cobertura em Ajustes. Abra-o regularmente para renovar a programação. Avisos já entregues ao sistema não podem ser recolhidos.
 

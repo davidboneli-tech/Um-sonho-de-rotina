@@ -1201,7 +1201,7 @@ function Application() {
           <Txt>{o.event.place || "Não informado"}</Txt>
         </Card>
         <Card alternate>
-          <Title small>Lembretes silenciosos</Title>
+          <Title small>Lembretes</Title>
           <Txt>
             {o.event.reminders.length
               ? o.event.reminders

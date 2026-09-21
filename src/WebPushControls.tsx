@@ -26,6 +26,6 @@ export function WebPushControls({ enable, refresh }: { enable: () => Promise<voi
     </>}
     {busy && <Txt>Aguarde…</Txt>}
     {!!message && <Txt>{message}</Txt>}
-    <Txt muted>Os horários são enviados pela internet. Alterações feitas sem conexão serão enviadas quando você reabrir o app com internet. Até lá, os avisos anteriores podem continuar. Os avisos pedem silêncio; confira também a opção Sons nos ajustes do iPhone.</Txt>
+    <Txt muted>Os horários são enviados pela internet. Alterações feitas sem conexão serão enviadas quando você reabrir o app com internet. Até lá, os avisos anteriores podem continuar. Para ouvir os avisos, ative Sons nos ajustes de notificações do iPhone e confira o modo silencioso e o Foco.</Txt>
   </>;
 }

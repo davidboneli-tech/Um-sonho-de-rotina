@@ -52,7 +52,7 @@ self.addEventListener('push', event => event.waitUntil((async()=>{
   icon: new URL('./icon-192.png',self.registration.scope).href,
   badge: new URL('./icon-192.png',self.registration.scope).href,
   tag: typeof item.tag==='string' ? item.tag.slice(0,240) : 'sonho-aviso',
-  silent: true,
+  silent: false,
   renotify: false,
   data: {url:new URL('./',self.registration.scope).href}
  });
