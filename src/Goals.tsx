@@ -21,6 +21,7 @@ import {
   Field,
   Txt,
   Art,
+  ArtPicker,
   Choices,
   styles,
   useTheme,
@@ -59,12 +60,9 @@ export function GoalForm({
         value={g.title}
         onChangeText={(title: string) => set({ ...g, title })}
       />
-      <Choices
-        value={g.image}
-        onChange={(image) => set({ ...g, image })}
-        values={illustrations.map((im, i) => ({ label: im.name, value: i }))}
-      />
-      <Art index={g.image} />
+      <Txt muted>Escolha uma imagem · deslize para ver mais</Txt>
+      <ArtPicker value={g.image} onChange={(image) => set({ ...g, image })} />
+      <Txt muted>{illustrations[g.image]?.name}</Txt>
       <Field
         label="Meta em horas"
         value={hours}

@@ -69,11 +69,11 @@ export function Auth({
         <Txt muted>Um tempo para você</Txt>
         <Image
           source={people.Fabi}
-          resizeMode="cover"
+          resizeMode="contain"
           style={{
             width: 158,
             height: 190,
-            borderRadius: 75,
+            borderRadius: 0,
             marginVertical: 25,
           }}
         />

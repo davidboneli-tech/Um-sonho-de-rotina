@@ -9,6 +9,7 @@ import {
   Image,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Segments } from "./src/ui";
 import { NavIcon } from "./src/NavIcon";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -579,19 +580,12 @@ function Application() {
                   : tab}
             </Title>
           </View>
-          {tab === "Hoje" ? <Avatar name="Fabi" size={68} /> : <Flourish />}
+          {tab === "Hoje" ? <Avatar name="Fabi" size={78} /> : <Flourish />}
         </View>
         {tab === "Hoje" && (
           <>
             <Txt muted>{prettyDay(selected)}</Txt>
-            <Choices
-              value={view}
-              onChange={setView}
-              values={["Hoje", "Semana", "Agenda"].map((value) => ({
-                label: value,
-                value,
-              }))}
-            />
+            <Segments value={view} onChange={setView} values={["Hoje", "Semana", "Agenda"]} />
             <View style={styles.spread}>
               <Button
                 outline

@@ -80,11 +80,11 @@ export function useTheme() {
       s.font === 0
         ? Platform.OS === "ios"
           ? "Georgia"
-          : "serif"
+          : "Georgia, Times New Roman, serif"
         : s.font === 1
           ? Platform.OS === "ios"
             ? "Avenir Next"
-            : "sans-serif"
+            : "Avenir Next, Trebuchet MS, sans-serif"
           : undefined,
     settings: s,
   };
@@ -115,9 +115,9 @@ export function Title({ children, small = false }: any) {
       style={{
         color: t.ink,
         fontFamily: t.heading,
-        fontSize: small ? 25 : 34,
-        lineHeight: small ? 33 : 42,
-        marginVertical: 9,
+        fontSize: small ? 22 : 30,
+        lineHeight: small ? 29 : 38,
+        marginVertical: 8,
       }}
     >
       {children}
@@ -147,8 +147,8 @@ export function Button({
         opacity: disabled ? 0.45 : 1,
         borderColor: danger ? "#983C43" : t.primary,
         borderWidth: 1,
-        borderRadius: 17,
-        paddingVertical: small ? 9 : 13,
+        borderRadius: 14,
+        paddingVertical: small ? 7 : 11,
         paddingHorizontal: small ? 12 : 18,
         minHeight: 44,
         alignItems: "center",
@@ -303,19 +303,23 @@ export function Art({ index, size = 85 }: { index: number; size?: number }) {
 }
 export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
   return (
-    <Image
-      accessibilityLabel={name}
-      source={people[name] || people.Fabi}
-      style={{
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        borderWidth: 2,
-        borderColor: "#FFFFFF",
-      }}
-      resizeMode="cover"
-    />
+    <View style={{ width:size, height:size, borderRadius:size/2, backgroundColor:"#F3E4DF", borderWidth:1, borderColor:"#FFFFFF", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+      <Image accessibilityLabel={name} source={people[name] || people.Fabi}
+        resizeMode="contain" style={{width:size*0.82,height:size*0.82}} />
+    </View>
   );
+}
+export function ArtPicker({ value, onChange }: {value:number;onChange:(n:number)=>void}) {
+  const t=useTheme();
+  return <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap:10,paddingVertical:10}}>
+    {illustrations.map((item,i)=><Pressable key={item.name} accessibilityRole="button" accessibilityLabel={item.name} accessibilityState={{selected:value===i}} onPress={()=>onChange(i)} style={{width:78,height:82,alignItems:"center",justifyContent:"center",borderRadius:16,borderWidth:1.5,borderColor:value===i?t.primary:"#E3DAD4",backgroundColor:value===i?t.second:"#FFFFFF80"}}><Art index={i} size={64}/></Pressable>)}
+  </ScrollView>;
+}
+export function Segments({ values, value, onChange }: {values:string[];value:string;onChange:(n:string)=>void}) {
+  const t=useTheme();
+  return <View style={{flexDirection:"row",backgroundColor:"#F1EAE5",borderRadius:15,padding:3,marginVertical:12}}>
+    {values.map(label=><Pressable key={label} accessibilityRole="button" accessibilityState={{selected:value===label}} onPress={()=>onChange(label)} style={{flex:1,minHeight:44,justifyContent:"center",alignItems:"center",borderRadius:12,backgroundColor:value===label?t.primary:"transparent"}}><Txt style={{fontSize:15,color:value===label?"#FFF":t.ink}}>{label}</Txt></Pressable>)}
+  </View>;
 }
 export function Flourish() {
   const t = useTheme();
