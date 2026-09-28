@@ -40,6 +40,7 @@ import {
   Title,
   Txt,
   Button,
+  DeleteButton,
   Card,
   Field,
   Check,
@@ -63,17 +64,20 @@ import { MedicineForm } from "./src/MedicineForm";
 import { GoalForm, ActivityForm, GoalCard, Suggestion } from "./src/Goals";
 import { goalAmount } from "./src/goalUnits";
 import { BackupReminder } from "./src/BackupReminder";
-import { FabiMoment } from "./src/FabiMoment";
+import { FabiMoment, FabiMessage } from "./src/FabiMoment";
+import { excludeMedicineDose } from "./src/medicineDeletion";
 import { SettingsPage } from "./src/Settings";
 
+import { drafts, loadDraft } from "./src/drafts";
+import { FormScreen, isForm } from "./src/draftModel";
+import { EventArt } from "./src/EventArt";
+
 type Screen =
-  | { kind: "event"; event: Event; original?: Occurrence }
+  | FormScreen
   | { kind: "detail"; occurrence: Occurrence }
-  | { kind: "medicine"; medicine?: Medicine }
-  | { kind: "goal"; goal?: Goal }
-  | { kind: "activity"; goal: Goal; occurrence?: Occurrence }
   | { kind: "slots"; goal: Goal }
   | { kind: "history" }
+  | { kind: "pending" }
   | null;
 type Confirmation = {
   title: string;
@@ -150,7 +154,7 @@ function EventCard({
           </View>
           {skipped && <Txt muted>Pulado neste dia</Txt>}
         </Pressable>
-        <Art index={o.event.image} size={70} />
+        <EventArt event={o.event} size={70} expandable />
       </View>
     </Card>
   );
@@ -166,7 +170,7 @@ function Application() {
     [month, setMonth] = useState(dayKey().slice(0, 7)),
     [view, setView] = useState("Hoje"),
     [routineTab, setRoutineTab] = useState("Tarefas");
-  const [screen, setScreen] = useState<Screen>(null),
+  const [screen, setScreenState] = useState<Screen>(null),
     [confirmation, setConfirmation] = useState<Confirmation>(null),
     [message, setMessage] = useState(""),
     [alertStatus, setAlertStatus] = useState(
@@ -179,14 +183,15 @@ function Application() {
   ref.current = data;
   const today = dayKey();
   useEffect(() => {
-    Promise.all([loadData(), hasPin()])
-      .then(([d, p]) => {
+    Promise.all([loadData(), hasPin(), loadDraft(setMessage)])
+      .then(([d, p, draft]) => {
         if (d)
           setData({
             ...d,
             doseHistory: d.doseHistory || {},
             settings: { ...defaultSettings, ...d.settings },
           });
+        if (draft) { setScreenState(draft.screen); setTab(draft.tab); setSelected(draft.selected); }
         setExisting(p);
         setLoaded(true);
       })
@@ -221,17 +226,33 @@ function Application() {
     const sub = AppState.addEventListener("change", (state) => {
       if (state === "background") {
         setUnlocked(false);
-        setScreen(null);
         setConfirmation(null);
       }
-      if (state === "active") {
-        setSelected(dayKey());
-      }
+
     });
     return () => sub.remove();
   }, []);
   const change = (p: Partial<Data>) => setData((d) => ({ ...d, ...p }));
-  const close = () => setScreen(null);
+  const close = () => setScreenState(null);
+  const finishForm = () => { drafts.clear(); close(); };
+  const resumeDraft = () => {
+    const d = drafts.current;
+    if (d) { setTab(d.tab); setSelected(d.selected); setScreenState(d.screen); }
+  };
+  const discardDraft = () => ask("Descartar rascunho?", "Somente a edição não salva será descartada. Os cadastros da agenda continuam como estão.", [
+    { label: "Descartar rascunho", run: () => { drafts.clear(); close(); } },
+  ]);
+  function setScreen(next: Screen) {
+    if (isForm(next)) {
+      const start = () => { drafts.begin(next, tab, selected); setScreenState(next); };
+      if (drafts.current) {
+        ask("Você tem um rascunho", "Continue a edição anterior ou descarte o rascunho para começar este cadastro.", [
+          { label: "Continuar edição", run: resumeDraft },
+          { label: "Descartar e começar este", run: start },
+        ]);
+      } else start();
+    } else setScreenState(next);
+  }
   const ask = (
     title: string,
     message: string,
@@ -277,11 +298,11 @@ function Application() {
   const remove = (o: Occurrence) =>
     ask(
       "Excluir compromisso?",
-      o.event.title,
+      `${o.event.title} · ${toBrazil(o.date)}. A exclusão também cancela os lembretes correspondentes.`,
       o.event.repeat === "none"
         ? [
             {
-              label: "Excluir evento",
+              label: "Excluir compromisso",
               run: () => {
                 change({
                   events: data.events.filter((e) => e.id !== o.event.id),
@@ -292,7 +313,7 @@ function Application() {
           ]
         : [
             {
-              label: "Só esta ocorrência",
+              label: "Só este dia",
               run: () => {
                 change({
                   events: data.events.map((e) =>
@@ -305,7 +326,7 @@ function Application() {
               },
             },
             {
-              label: "Esta e as próximas",
+              label: "Este e os próximos",
               run: () => {
                 change({
                   events: data.events.map((e) =>
@@ -356,6 +377,22 @@ function Application() {
       </Card>
     );
   };
+  const removeMedicine = (medicine: Medicine) => ask(
+    "Excluir medicamento?",
+    `${medicine.name}: o cadastro e os lembretes futuros serão removidos. As doses já confirmadas permanecem no histórico.`,
+    [{ label: "Excluir medicamento", run: () => {
+      change({ medicines: data.medicines.filter(m => m.id !== medicine.id) });
+      finishForm();
+    } }],
+  );
+  const removeDose = (medicine: Medicine, date: string, time: string) => ask(
+    "Excluir lançamento?",
+    `${medicine.name} · ${toBrazil(date)} às ${time}. Escolha o que remover da agenda e dos lembretes. As confirmações anteriores serão preservadas.`,
+    [
+      { label: "Só este horário neste dia", run: () => change({ medicines: data.medicines.map(m => m.id === medicine.id ? excludeMedicineDose(m, date, time, "one") : m) }) },
+      { label: "Este e os próximos", run: () => change({ medicines: data.medicines.map(m => m.id === medicine.id ? excludeMedicineDose(m, date, time, "future") : m) }) },
+    ],
+  );
   const doseCards = (date: string) =>
     dosesOn(data, date).map((d) => {
       const taken = data.doses[d.key];
@@ -423,6 +460,7 @@ function Application() {
           >
             {taken ? "Desfazer" : "Tomei"}
           </Button>
+          {!taken && <DeleteButton onPress={() => removeDose(d.medicine, date, d.time)} />}
         </Card>
       );
     });
@@ -517,7 +555,7 @@ function Application() {
                     }}
                   >
                     {items.slice(0, 3).map((o) => (
-                      <Art key={o.key} index={o.event.image} size={21} />
+                      <EventArt key={o.key} event={o.event} size={21} />
                     ))}
                     {items.length > 3 && (
                       <Txt style={{ fontSize: 10 }}>+{items.length - 3}</Txt>
@@ -551,13 +589,14 @@ function Application() {
       g.encouragement !== "off" &&
       goalProgress(data, g, today) < g.target,
   );
+  const overdue = pending(data, today);
   function content() {
     if (tab === "Ajustes")
       return (
         <SettingsPage
           data={data}
           restore={(next) => ask("Restaurar backup?", "Os dados atuais serão substituídos. O PIN deste aparelho será mantido.", [{label: "Substituir e restaurar", run: () => {
-            saveData(next).then(() => { setData(next); setTab("Hoje"); setMessage("Backup restaurado."); }).catch(() => setMessage("Não foi possível restaurar. Os dados atuais foram mantidos."));
+            saveData(next).then(() => { drafts.clear(); setScreenState(null); setData(next); setTab("Hoje"); setMessage("Backup restaurado."); }).catch(() => setMessage("Não foi possível restaurar. Os dados atuais foram mantidos."));
           }}])}
           settings={data.settings}
           save={(settings) => change({ settings })}
@@ -594,6 +633,11 @@ function Application() {
           </View>
           {tab === "Hoje" ? <Avatar name="Fabi" size={78} /> : <Flourish />}
         </View>
+        {!!drafts.current && <Card>
+          <Title small>Você tem uma edição em andamento</Title>
+          <Button onPress={resumeDraft}>Continuar edição</Button>
+          <Button outline onPress={discardDraft}>Descartar rascunho</Button>
+        </Card>}
         {tab === "Hoje" && (
           <>
             <Txt muted>{prettyDay(selected)}</Txt>
@@ -653,66 +697,9 @@ function Application() {
             {selected === today && nextGoal && !suggestionDismissed && (
               <Suggestion data={data} goal={nextGoal} onSchedule={schedule} onDismiss={() => setSuggestionDismissed(true)} />
             )}
-            {pending(data, today).length > 0 && (
-              <>
-                <Title small>Ficou para depois</Title>
-                {pending(data, today).map((o) => (
-                  <Card key={o.key}>
-                    <Txt>
-                      {o.event.title} · {toBrazil(o.date)}
-                    </Txt>
-                    <Button
-                      small
-                      outline
-                      onPress={() => {
-                        const replacement = { ...o.event, date: today };
-                        change({
-                          events: editOccurrence(
-                            data.events,
-                            o.event,
-                            o.date,
-                            replacement,
-                            "one",
-                          ),
-                        });
-                      }}
-                    >
-                      Fazer hoje
-                    </Button>
-                    <Button
-                      small
-                      outline
-                      onPress={() =>
-                        setScreen({
-                          kind: "event",
-                          event: { ...o.event, date: today },
-                          original: o,
-                        })
-                      }
-                    >
-                      Escolher outra data
-                    </Button>
-                    <Button
-                      small
-                      outline
-                      onPress={() =>
-                        ask("Cancelar pendência?", o.event.title, [
-                          {
-                            label: "Cancelar só este dia",
-                            run: () =>
-                              change({
-                                skipped: { ...data.skipped, [o.key]: true },
-                              }),
-                          },
-                        ])
-                      }
-                    >
-                      Cancelar
-                    </Button>
-                  </Card>
-                ))}
-              </>
-            )}
+            {overdue.length > 0 && <Pressable accessibilityRole="button" accessibilityLabel="Ver compromissos pendentes" onPress={() => setScreen({ kind: "pending" })}>
+              <Card alternate><FabiMessage scene="attention" title="Fabi, ficou algo pendente. Vamos conferir?" body={`${overdue.length} ${overdue.length === 1 ? "compromisso para conferir" : "compromissos para conferir"}. Toque para ver.`} /></Card>
+            </Pressable>}
           </>
         )}
         {tab === "Calendário" && (
@@ -765,7 +752,7 @@ function Application() {
                   .map((e) => (
                     <Card key={e.id}>
                       <View style={styles.row}>
-                        <Art index={e.image} />
+                        <EventArt event={e} expandable />
                         <View style={{ flex: 1 }}>
                           <Title small>{e.title}</Title>
                           <Txt muted>
@@ -811,6 +798,11 @@ function Application() {
                       >
                         Editar rotina
                       </Button>
+                      <DeleteButton onPress={() => {
+                        const next = Array.from({ length: 367 }, (_, i) => addDays(today, i)).flatMap(date => occurrences(data, date)).find(o => o.event.id === e.id);
+                        if (next) remove(next);
+                        else ask("Excluir rotina?", `${e.title}: remover o cadastro desta rotina?`, [{ label: "Excluir rotina", run: () => change({ events: data.events.filter(x => x.id !== e.id) }) }]);
+                      }}>Excluir rotina</DeleteButton>
                     </Card>
                   ))}
                 {!data.events.some((e) => e.repeat !== "none") && (
@@ -983,41 +975,51 @@ function Application() {
     if (screen.kind === "event")
       return (
         <EventForm
+          key={drafts.generation}
           initial={screen.event}
           original={screen.original}
+          reschedule={screen.reschedule}
           data={data}
           commit={(events) => change({ events })}
-          close={close}
+          close={finishForm}
+          cancel={close}
         />
       );
     if (screen.kind === "medicine")
       return (
         <MedicineForm
+          key={drafts.generation}
           value={screen.medicine}
+          remove={screen.medicine ? () => removeMedicine(screen.medicine!) : undefined}
           save={(m) =>
             change({
               medicines: [...data.medicines.filter((x) => x.id !== m.id), m],
             })
           }
-          close={close}
+          close={finishForm}
+          cancel={close}
         />
       );
     if (screen.kind === "goal")
       return (
         <GoalForm
+          key={drafts.generation}
           value={screen.goal}
           save={(g) =>
             change({ goals: [...data.goals.filter((x) => x.id !== g.id), g] })
           }
-          close={close}
+          close={finishForm}
+          cancel={close}
         />
       );
     if (screen.kind === "activity")
       return (
         <ActivityForm
+          key={drafts.generation}
           goal={screen.goal}
           occurrence={screen.occurrence}
-          close={close}
+          close={finishForm}
+          cancel={close}
           save={(n, date) => {
             const key = screen.occurrence?.key;
             const skipped = { ...data.skipped };
@@ -1097,6 +1099,21 @@ function Application() {
         </Page>
       );
     }
+    if (screen.kind === "pending") return <Page>
+      <Button outline onPress={close}>Voltar</Button>
+      <Title>Pendentes</Title>
+      <Txt muted>Confira o que ficou de outros dias. As próximas repetições continuam na agenda.</Txt>
+      {!overdue.length && <Txt>Tudo conferido por aqui!</Txt>}
+      {overdue.map(o => <Card key={o.key}>
+        <View style={styles.row}>
+          <EventArt event={o.event} size={65} expandable />
+          <View style={{ flex: 1, minWidth: 0 }}><Title small>{o.event.title}</Title><Txt muted>{toBrazil(o.date)}{o.event.mode === "horario" ? ` · ${o.event.start}` : ""}</Txt></View>
+        </View>
+        <Button onPress={() => complete(o)}>Concluir</Button>
+        <Button outline onPress={() => setScreen({ kind: "event", event: { ...o.event, date: today }, original: o, reschedule: true })}>Reagendar</Button>
+        <Button outline onPress={() => ask("Pular esta pendência?", `${o.event.title} · ${toBrazil(o.date)}. As próximas repetições serão mantidas.`, [{ label: "Pular só este dia", run: () => change({ skipped: { ...data.skipped, [o.key]: true } }) }])}>Pular</Button>
+      </Card>)}
+    </Page>;
     if (screen.kind === "history")
       return (
         <Page>
@@ -1176,7 +1193,7 @@ function Application() {
                 : modeLabel[o.event.mode]}
             </Txt>
           </View>
-          <Art index={o.event.image} size={105} />
+          <EventArt event={o.event} size={105} expandable />
         </View>
         <View style={styles.row}>
           {o.event.people.map((n) => (
@@ -1237,9 +1254,7 @@ function Application() {
             Pular só este dia
           </Button>
         )}
-        <Button danger outline onPress={() => remove(o)}>
-          Excluir evento
-        </Button>
+        <DeleteButton onPress={() => remove(o)}>Excluir compromisso</DeleteButton>
       </Page>
     );
   }
@@ -1262,7 +1277,7 @@ function Application() {
             onUnlock={() => {
               setExisting(true);
               setUnlocked(true);
-              setSelected(dayKey());
+              if (!drafts.current) setSelected(dayKey());
             }}
           />
         ) : (
@@ -1280,12 +1295,15 @@ function Application() {
                 style={{ flex: 1 }}
               >
                 {screenContent()}
+                {screen && isForm(screen) && <View style={{ paddingHorizontal: 20, paddingBottom: 12 }}>
+                  <Button outline small onPress={discardDraft}>Descartar rascunho</Button>
+                </View>}
               </KeyboardAvoidingView>
             </SafeAreaView>
           </ThemeContext.Provider>
         </Modal>
         <Modal
-          visible={!!confirmation || !!message}
+          visible={unlocked && (!!confirmation || !!message)}
           transparent
           animationType="none"
           onRequestClose={() => {
@@ -1331,7 +1349,7 @@ function Application() {
                   setMessage("");
                 }}
               >
-                {confirmation ? "Voltar" : "Entendi"}
+                {confirmation ? "Cancelar" : "Entendi"}
               </Button>
             </View>
           </View>
@@ -1411,3 +1429,4 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+

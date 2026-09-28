@@ -39,5 +39,7 @@ export const illustrations = [
     name: "Medicamentos",
     source: require("../assets/activities/19_Medicamentos.png"),
   },
+  { name: "Compromissos gerais", source: require("../assets/activities/20_Compromissos_gerais.png") },
 ];
 export { people, fabiSuggestion, fabiScenes } from './avatars.generated';
+

@@ -5,14 +5,15 @@ const days = (v: any) => Array.isArray(v) && v.every(x => Number.isInteger(x) &&
 const str = (v: any, keys: string[]) => keys.every(k => typeof v[k] === 'string');
 const number = (v: any) => typeof v === 'number' && Number.isFinite(v) && v >= 0;
 const map = (v: any, type: string) => object(v) && Object.values(v).every(x => typeof x === type);
+const doseDate = (v: any) => typeof v === 'string' && v.length === 16 && v[10] === 'T' && validDay(v.slice(0,10)) && validTime(v.slice(11));
 export function parseBackup(text: string): Data {
   if (text.length > 20_000_000) throw new Error('Backup muito grande (limite de 20 MB).');
   const wrapper = JSON.parse(text);
   const d = wrapper?.format === 'sonho-backup-v1' ? wrapper.data : null;
   const fail = () => { throw new Error('Backup inválido ou incompatível. Seus dados não foram alterados.'); };
   if (!object(d) || d.version !== 1) return fail();
-  if (!Array.isArray(d.events) || !d.events.every((e: any) => object(e) && str(e,['id','title','date','start','end','category','priority','notes','place']) && validDay(e.date) && (!e.endDate || validDay(e.endDate)) && validTime(e.start) && validTime(e.end) && ['horario','manha','tarde','noite','livre','dia'].includes(e.mode) && ['none','weekly','monthly','yearly'].includes(e.repeat) && days(e.days) && number(e.image) && strings(e.people) && strings(e.checklist) && strings(e.exceptions) && Array.isArray(e.reminders) && e.reminders.every(number) && typeof e.highlight === 'boolean')) return fail();
-  if (!Array.isArray(d.medicines) || !d.medicines.every((m: any) => object(m) && str(m,['id','name','dose','startDate']) && validDay(m.startDate) && (!m.endDate || validDay(m.endDate)) && strings(m.times) && m.times.every(validTime) && days(m.days) && (m.intervalDays === undefined || (Number.isInteger(m.intervalDays) && m.intervalDays >= 1 && m.intervalDays <= 365)) && typeof m.active === 'boolean' && (!m.photo || (typeof m.photo === 'string' && /^data:image\/(png|jpeg|webp);base64,/.test(m.photo))))) return fail();
+  if (!Array.isArray(d.events) || !d.events.every((e: any) => object(e) && str(e,['id','title','date','start','end','category','priority','notes','place']) && validDay(e.date) && (!e.endDate || validDay(e.endDate)) && validTime(e.start) && validTime(e.end) && ['horario','manha','tarde','noite','livre','dia'].includes(e.mode) && ['none','weekly','monthly','yearly'].includes(e.repeat) && days(e.days) && number(e.image) && (e.photo === undefined || (typeof e.photo === "string" && /^data:image\/(png|jpeg|webp);base64,/.test(e.photo) && e.photo.length <= 1500000)) && strings(e.people) && strings(e.checklist) && strings(e.exceptions) && Array.isArray(e.reminders) && e.reminders.every(number) && typeof e.highlight === 'boolean')) return fail();
+  if (!Array.isArray(d.medicines) || !d.medicines.every((m: any) => object(m) && str(m,['id','name','dose','startDate']) && validDay(m.startDate) && (!m.endDate || validDay(m.endDate)) && strings(m.times) && m.times.every(validTime) && days(m.days) && (m.intervalDays === undefined || (Number.isInteger(m.intervalDays) && m.intervalDays >= 1 && m.intervalDays <= 365)) && typeof m.active === 'boolean' && (m.excludedDoses === undefined || (Array.isArray(m.excludedDoses) && m.excludedDoses.every(doseDate))) && (m.cancelledFrom === undefined || doseDate(m.cancelledFrom)) && (!m.photo || (typeof m.photo === 'string' && /^data:image\/(png|jpeg|webp);base64,/.test(m.photo))))) return fail();
   if (!Array.isArray(d.goals) || !d.goals.every((g: any) => object(g) && str(g,['id','title']) && number(g.image) && number(g.target) && g.target > 0 && ['daily','monthly'].includes(g.period) && ['off','gentle','firm'].includes(g.encouragement) && typeof g.paused === 'boolean')) return fail();
   if (!Array.isArray(d.activities) || !d.activities.every((a: any) => object(a) && str(a,['id','goalId','date']) && validDay(a.date) && number(a.minutes))) return fail();
   if (!map(d.done,'string') || !map(d.doses,'string') || !map(d.skipped,'boolean') || !map(d.checks,'boolean')) return fail();
@@ -25,3 +26,4 @@ export function parseBackup(text: string): Data {
 export function backupText(data: Data) {
   return JSON.stringify({format:'sonho-backup-v1', exportedAt:new Date().toISOString(), data}, null, 2);
 }
+

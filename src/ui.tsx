@@ -338,3 +338,11 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
 });
+
+export function DeleteButton({ onPress, children = "Excluir" }: { onPress: () => void; children?: React.ReactNode }) {
+  return <Pressable accessibilityRole="button" accessibilityLabel={typeof children === 'string' ? children : 'Excluir'} onPress={onPress}
+    style={{ minHeight: 48, marginVertical: 7, paddingVertical: 8, paddingHorizontal: 14, borderWidth: 1, borderColor: '#983C43', borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+    <Image accessible={false} source={require('../assets/actions/Excluir.png')} resizeMode="contain" style={{ width: 34, height: 38, flexShrink: 0 }} />
+    <Txt style={{ color: '#983C43', fontWeight: '600', textAlign: 'center', flexShrink: 1 }}>{children}</Txt>
+  </Pressable>;
+}

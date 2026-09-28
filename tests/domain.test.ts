@@ -128,12 +128,14 @@ test("daily progress does not include previous day or another goal", () => {
   assert.equal(goalProgress(d, g, "2026-09-21"), 30);
   assert.equal(goalProgress(d, { ...g, period: "monthly" }, "2026-09-21"), 90);
 });
-test("pending list excludes scheduled appointments and completed tasks", () => {
+test("pending list includes overdue appointments and excludes completed or skipped items", () => {
   const d = emptyData();
   const a = { ...newEvent("2026-09-20"), mode: "livre" as const };
   d.events = [a, newEvent("2026-09-20")];
-  assert.equal(pending(d, "2026-09-21").length, 1);
+  assert.equal(pending(d, "2026-09-21").length, 2);
   d.done[`${a.id}@2026-09-20`] = "done";
+  assert.equal(pending(d, "2026-09-21").length, 1);
+  d.skipped[`${d.events[1].id}@2026-09-20`] = true;
   assert.equal(pending(d, "2026-09-21").length, 0);
 });
 test("invalid calendar dates rejected", () => {
@@ -174,3 +176,4 @@ test("notification schedule excludes confirmed doses and finished events", () =>
   d.done[`${e.id}@2026-09-21`] = "done";
   assert.equal(notificationCandidates(d, now).length, 0);
 });
+

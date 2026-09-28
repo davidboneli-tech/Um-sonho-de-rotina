@@ -26,6 +26,9 @@ import {
   Page,
   Card,
 } from "./ui";
+import { useDraftState } from "./drafts";
+import { EventArt } from "./EventArt";
+import { pickMedicinePhoto } from "./medicinePhoto";
 import { illustrations, people } from "./assets";
 export function EventForm({
   initial,
@@ -33,20 +36,31 @@ export function EventForm({
   data,
   commit,
   close,
+  cancel,
+  reschedule = false,
 }: {
   initial: Event;
   original?: Occurrence;
   data: Data;
   commit: (events: Event[]) => void;
   close: () => void;
+  cancel: () => void;
+  reschedule?: boolean;
 }) {
-  const [e, set] = useState(initial),
-    [date, setDate] = useState(toBrazil(initial.date));
-  const [reminders, setReminders] = useState(initial.reminders.join(", "));
+  const [e, set] = useDraftState("event", initial),
+    [date, setDate] = useDraftState("date", toBrazil(initial.date));
+  const [reminders, setReminders] = useDraftState("reminders", initial.reminders.join(", "));
   const [error, setError] = useState(""),
     [conflicts, setConflicts] = useState<Occurrence[]>([]),
     [imagePicker, setImagePicker] = useState(false);
-  const [scope, setScope] = useState<"one" | "future">("one");
+  const [scope, setScope] = useDraftState<"one" | "future">("scope", "one");
+  const [photoBusy, setPhotoBusy] = useState(false);
+  async function photo() {
+    setPhotoBusy(true); setError("");
+    try { const uri = await pickMedicinePhoto(); if (uri) set(current => ({ ...current, photo: uri })); }
+    catch (err) { setError(err instanceof Error ? err.message : "Não foi possível abrir a imagem."); }
+    finally { setPhotoBusy(false); }
+  }
   const change = (p: Partial<Event>) => {
     set({ ...e, ...p });
     setConflicts([]);
@@ -88,7 +102,7 @@ export function EventForm({
             original.event,
             original.date,
             value,
-            scope,
+            reschedule ? "one" : scope,
           )
         : [...data.events, value];
       const candidate =
@@ -111,11 +125,11 @@ export function EventForm({
   };
   return (
     <Page>
-      <Button outline onPress={close}>
-        Cancelar
+      <Button outline onPress={cancel}>
+        Guardar e voltar
       </Button>
-      <Title>{original ? "Editar evento" : "Novo evento"}</Title>
-      {original && original.event.repeat !== "none" && (
+      <Title>{reschedule ? "Reagendar compromisso" : original ? "Editar evento" : "Novo evento"}</Title>
+      {original && original.event.repeat !== "none" && !reschedule && (
         <>
           <Txt>Aplicar alteração</Txt>
           <Choices
@@ -129,11 +143,12 @@ export function EventForm({
         </>
       )}
       <View style={styles.row}>
-        <Art index={e.image} />
+        <EventArt event={e} expandable />
         <Button outline onPress={() => setImagePicker(!imagePicker)}>
-          Trocar imagem
+          Figurinhas do app
         </Button>
       </View>
+      <Button outline disabled={photoBusy} onPress={photo}>{photoBusy ? "Preparando imagem…" : "Usar foto ou imagem"}</Button>
       {imagePicker && (
         <View style={styles.wrap}>
           {illustrations.map((im, i) => (
@@ -142,13 +157,13 @@ export function EventForm({
               accessibilityRole="button"
               accessibilityLabel={im.name}
               onPress={() => {
-                change({ image: i });
+                change({ image: i, photo: undefined });
                 setImagePicker(false);
               }}
               style={{ width: 94, alignItems: "center" }}
             >
               <Art index={i} size={70} />
-              <Txt style={{ fontSize: 12 }}>{im.name}</Txt>
+              <Txt style={{ fontSize: 12, textAlign: "center", width: "100%" }}>{im.name}</Txt>
             </Pressable>
           ))}
         </View>
@@ -321,12 +336,13 @@ export function EventForm({
           <Button outline onPress={() => setConflicts([])}>
             Alterar horário
           </Button>
-          <Button outline onPress={close}>
+          <Button outline onPress={cancel}>
             Cancelar cadastro
           </Button>
         </Card>
       )}
-      <Button onPress={() => save()}>Salvar evento</Button>
+      <Button disabled={photoBusy} onPress={() => save()}>Salvar evento</Button>
     </Page>
   );
 }
+

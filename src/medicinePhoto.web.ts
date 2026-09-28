@@ -32,7 +32,7 @@ export async function normalizeMedicinePhoto(file: File): Promise<string> {
     try {
       const converted = await heicTo({ blob: file, type: 'image/jpeg', quality: 0.8 });
       return await jpeg(converted as Blob);
-    } catch { throw new Error('Não foi possível converter esta foto HEIC. Tente outra foto da embalagem.'); }
+    } catch { throw new Error('Não foi possível converter esta foto HEIC. Tente outra imagem.'); }
   }
 }
 
@@ -50,3 +50,4 @@ export function pickMedicinePhoto(): Promise<string | null> {
     input.click();
   });
 }
+

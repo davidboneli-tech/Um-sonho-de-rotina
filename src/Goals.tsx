@@ -29,16 +29,19 @@ import {
 import { fabiScenes, illustrations } from "./assets";
 import { goalScene } from "./companion";
 import { goalAmount, goalMinutes } from "./goalUnits";
+import { useDraftState } from "./drafts";
 export function GoalForm({
   value,
   save,
   close,
+  cancel,
 }: {
   value?: Goal;
   save: (g: Goal) => void;
   close: () => void;
+  cancel: () => void;
 }) {
-  const [g, set] = useState<Goal>(
+  const [g, set] = useDraftState<Goal>("goal",
     value || {
       id: uid(),
       title: "",
@@ -49,12 +52,12 @@ export function GoalForm({
       encouragement: "gentle",
     },
   );
-  const [hours, setHours] = useState(String(g.period === "daily" ? g.target : g.target / 60)),
+  const [hours, setHours] = useDraftState("hours", String(g.period === "daily" ? g.target : g.target / 60)),
     [error, setError] = useState("");
   return (
     <Page>
-      <Button outline onPress={close}>
-        Cancelar
+      <Button outline onPress={cancel}>
+        Guardar e voltar
       </Button>
       <Title>{value ? "Editar objetivo" : "Novo objetivo"}</Title>
       <Field
@@ -120,19 +123,21 @@ export function ActivityForm({
   occurrence,
   save,
   close,
+  cancel,
 }: {
   goal: Goal;
   occurrence?: Occurrence;
   save: (minutes: number, date: string) => void;
   close: () => void;
+  cancel: () => void;
 }) {
-  const [duration, setDuration] = useState(goal.period === "daily" ? "30" : "0,5"),
-    [date, setDate] = useState(toBrazil(occurrence?.date || dayKey())),
+  const [duration, setDuration] = useDraftState("duration", goal.period === "daily" ? "30" : "0,5"),
+    [date, setDate] = useDraftState("date", toBrazil(occurrence?.date || dayKey())),
     [error, setError] = useState("");
   return (
     <Page>
-      <Button outline onPress={close}>
-        Voltar
+      <Button outline onPress={cancel}>
+        Guardar e voltar
       </Button>
       <Title>Registrar atividade</Title>
       <Art index={goal.image} />
@@ -281,3 +286,4 @@ export function GoalCard({ data, goal, edit, record, find, pause }: any) {
     </Card>
   );
 }
+

@@ -12,18 +12,23 @@ import {
   fromBrazil,
   toBrazil,
 } from "./domain";
-import { Page, Button, Title, Field, Check, Txt, Art, Choices } from "./ui";
+import { Page, Button, Title, Field, Check, Txt, Art, Choices, DeleteButton } from "./ui";
 import { pickMedicinePhoto } from "./medicinePhoto";
+import { useDraftState } from "./drafts";
 export function MedicineForm({
   value,
   save,
   close,
+  cancel,
+  remove,
 }: {
   value?: Medicine;
   save: (m: Medicine) => void;
   close: () => void;
+  cancel: () => void;
+  remove?: () => void;
 }) {
-  const [m, set] = useState<Medicine>(
+  const [m, set] = useDraftState<Medicine>("medicine",
     value || {
       id: uid(),
       name: "",
@@ -34,13 +39,13 @@ export function MedicineForm({
       active: true,
     },
   );
-  const [times, setTimes] = useState(m.times.join(", ")),
-    [start, setStart] = useState(toBrazil(m.startDate)),
-    [end, setEnd] = useState(m.endDate ? toBrazil(m.endDate) : ""),
+  const [times, setTimes] = useDraftState("times", m.times.join(", ")),
+    [start, setStart] = useDraftState("start", toBrazil(m.startDate)),
+    [end, setEnd] = useDraftState("end", m.endDate ? toBrazil(m.endDate) : ""),
     [error, setError] = useState("");
   const [photoBusy, setPhotoBusy] = useState(false);
-  const [interval, setInterval] = useState(String(m.intervalDays || 15));
-  const [frequency, setFrequency] = useState(m.intervalDays ? "interval" : "weekdays");
+  const [interval, setInterval] = useDraftState("interval", String(m.intervalDays || 15));
+  const [frequency, setFrequency] = useDraftState("frequency", m.intervalDays ? "interval" : "weekdays");
   async function photo() {
     setError("");
     setPhotoBusy(true);
@@ -94,8 +99,8 @@ export function MedicineForm({
   }
   return (
     <Page>
-      <Button outline onPress={close}>
-        Cancelar
+      <Button outline onPress={cancel}>
+        Guardar e voltar
       </Button>
       <Title>{value ? "Editar medicamento" : "Novo medicamento"}</Title>
       {m.photo ? (
@@ -173,6 +178,8 @@ export function MedicineForm({
       </Txt>
       {!!error && <Txt style={{ color: "#A02D43" }}>{error}</Txt>}
       <Button onPress={submit} disabled={photoBusy}>Salvar medicamento</Button>
+      {!!value && !!remove && <DeleteButton onPress={remove}>Excluir medicamento</DeleteButton>}
     </Page>
   );
 }
+

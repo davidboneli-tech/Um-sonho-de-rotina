@@ -11,6 +11,7 @@ export type Event = {
   repeat: Repeat;
   days: number[];
   image: number;
+  photo?: string;
   people: string[];
   category: string;
   priority: string;
@@ -32,6 +33,8 @@ export type Medicine = {
   startDate: string;
   endDate?: string;
   intervalDays?: number;
+  excludedDoses?: string[];
+  cancelledFrom?: string;
   active: boolean;
   photo?: string;
 };
@@ -263,7 +266,6 @@ export function pending(data: Data, today: string): Occurrence[] {
   for (let date = oldest; date < today; date = addDays(date, 1)) {
     for (const o of occurrences(data, date))
       if (
-        o.event.mode !== "horario" &&
         !data.done[o.key] &&
         !data.skipped[o.key]
       )
@@ -296,6 +298,10 @@ export function dosesOn(data: Data, date: string) {
         key: doseKey(medicine.id, date, time),
       })),
     )
+    .filter(d => {
+      const at = `${date}T${d.time}`;
+      return !d.medicine.excludedDoses?.includes(at) && (!d.medicine.cancelledFrom || at < d.medicine.cancelledFrom);
+    })
     .sort((a, b) => a.time.localeCompare(b.time));
 }
 export function newEvent(date = dayKey()): Event {
@@ -320,3 +326,4 @@ export function newEvent(date = dayKey()): Event {
     exceptions: [],
   };
 }
+
