@@ -1,5 +1,6 @@
+import { Touch as Pressable } from "./Touch";
 import React, { useState } from 'react';
-import { Image, Modal, Pressable, View, ScrollView, AppState } from 'react-native';
+import { Image, Modal, View, ScrollView, AppState } from 'react-native';
 import { Art, Button, Txt } from './ui';
 
 export function EventArt({ event, size = 90, expandable = false }: { event: { image: number; photo?: string }; size?: number; expandable?: boolean }) {

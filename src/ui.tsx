@@ -1,9 +1,9 @@
+import { Touch as Pressable } from "./Touch";
 import React, { createContext, useContext } from "react";
 import {
   View,
   Text,
   TextInput,
-  Pressable,
   Image,
   StyleSheet,
   Platform,

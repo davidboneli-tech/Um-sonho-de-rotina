@@ -1,7 +1,7 @@
+import { Touch as Pressable } from "./src/Touch";
 import React, { useEffect, useRef, useState } from "react";
 import {
   View,
-  Pressable,
   Modal,
   AppState,
   Platform,
@@ -698,7 +698,7 @@ function Application() {
               <Suggestion data={data} goal={nextGoal} onSchedule={schedule} onDismiss={() => setSuggestionDismissed(true)} />
             )}
             {overdue.length > 0 && <Pressable accessibilityRole="button" accessibilityLabel="Ver compromissos pendentes" onPress={() => setScreen({ kind: "pending" })}>
-              <Card alternate><FabiMessage scene="attention" title="Fabi, ficou algo pendente. Vamos conferir?" body={`${overdue.length} ${overdue.length === 1 ? "compromisso para conferir" : "compromissos para conferir"}. Toque para ver.`} /></Card>
+              <Card alternate><FabiMessage scene="reminder" title="Fabi, ficou algo pendente. Vamos conferir?" body={`${overdue.length} ${overdue.length === 1 ? "compromisso para conferir" : "compromissos para conferir"}. Toque para ver.`} /></Card>
             </Pressable>}
           </>
         )}

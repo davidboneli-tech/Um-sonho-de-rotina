@@ -1,5 +1,6 @@
+import { Touch as Pressable } from "./Touch";
 import React, { useState } from "react";
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import {
   Event,
   Occurrence,

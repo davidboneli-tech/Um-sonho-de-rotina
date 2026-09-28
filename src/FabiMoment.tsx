@@ -1,5 +1,6 @@
+import { Touch as Pressable } from "./Touch";
 import React, { useEffect, useState } from 'react';
-import { AppState, Image, View, Pressable } from 'react-native';
+import { AppState, Image, View } from 'react-native';
 import { Data } from './domain';
 import { fabiScenes } from './assets';
 import { Card, Txt } from './ui';
